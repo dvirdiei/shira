@@ -5,32 +5,88 @@ import time
 from urllib.parse import quote
 
 # הגדרת נתיבים
-INPUT_DIR = "input"
-OUTPUT_DIR = "output"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # הנתיב של הספרייה שבה הסקריפט נמצא
+INPUT_DIR = os.path.join(SCRIPT_DIR, "input")
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
 INPUT_FILE = "adrees.txt"
-FAMOUS_LOCATIONS_OUTPUT = "../database/famous_locations.csv"
-MANUAL_LOCATIONS_OUTPUT = "../database/manual_locations.csv"
+DATABASE_DIR = os.path.join(SCRIPT_DIR, "..", "database")
+FOUND_ADDRESSES_OUTPUT = os.path.join(DATABASE_DIR, "found_addresses.csv")
+NOT_FOUND_ADDRESSES_OUTPUT = os.path.join(DATABASE_DIR, "not_found_addresses.csv")
+FUTURE_USE_OUTPUT = os.path.join(DATABASE_DIR, "future_use.csv")
 
-# מפתח ה‑API לגאוקודינג
-API_KEY = "674f3d5932464986828229gmn1437f0"
+# ייבוא מפתח ה‑API מקובץ התצורה
+try:
+    from config import API_KEY
+    print("[מידע] מפתח API נטען מקובץ התצורה")
+except ImportError:
+    print("[אזהרה] לא ניתן לטעון את קובץ התצורה. משתמש במפתח ברירת מחדל.")
+    API_KEY = "your_default_api_key_here"  # מפתח ברירת מחדל במקרה שקובץ התצורה לא קיים
 
 def ensure_directories():
     """יצירת תיקיות נדרשות אם אינן קיימות"""
     os.makedirs(INPUT_DIR, exist_ok=True)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    os.makedirs("../database", exist_ok=True)
+    os.makedirs(DATABASE_DIR, exist_ok=True)
+    print(f"[מידע] וידוא קיום תיקיות: {INPUT_DIR}, {OUTPUT_DIR}, {DATABASE_DIR}")
 
 def save_not_found_to_file(not_found_list):
-    """שמירת כתובות שלא נמצאו בקובץ טקסט"""
+    """שמירת כתובות שלא נמצאו בקובץ CSV למילוי ידני"""
     if not not_found_list:
         print("אין כתובות שלא נמצאו לשמירה.")
         return
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    path = os.path.join(OUTPUT_DIR, 'not_found_addresses.txt')
+        
+    # יצירת תיקיית database אם לא קיימת
+    database_dir = os.path.join(SCRIPT_DIR, "..", "database")
+    os.makedirs(database_dir, exist_ok=True)
+    
+    path = os.path.join(database_dir, 'not_found_addresses.csv')
+    
+    # הכנת כותרות הקובץ
+    headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה']
+    
     with open(path, 'w', encoding='utf-8') as f:
+        # כתיבת שורת הכותרות
+        f.write(','.join(headers) + '\n')
+        
+        # כתיבת הכתובות שלא נמצאו עם תאים ריקים למילוי ידני
         for addr in not_found_list:
-            f.write(f"{addr}\n")
-    print(f"[OK] רשימת כתובות שלא נמצאו נשמרה בקובץ: {path}")
+            # יוצר שורה עם הכתובת והשאר ריקים
+            row = [addr, '', '', '']
+            f.write(','.join(row) + '\n')
+            
+    print(f"[OK] רשימת כתובות שלא נמצאו נשמרה בקובץ: {path} (מוכן למילוי ידני)")
+    
+def save_found_addresses_to_file(results):
+    """שמירת כתובות שנמצאו להן קואורדינטות בקובץ CSV"""
+    if not results:
+        print("אין כתובות שנמצאו לשמירה.")
+        return
+        
+    # יצירת תיקיית database אם לא קיימת
+    database_dir = os.path.join(SCRIPT_DIR, "..", "database")
+    os.makedirs(database_dir, exist_ok=True)
+    
+    path = os.path.join(database_dir, 'found_addresses.csv')
+    
+    # הכנת כותרות הקובץ
+    headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה']
+    
+    with open(path, 'w', encoding='utf-8') as f:
+        # כתיבת שורת הכותרות
+        f.write(','.join(headers) + '\n')
+        
+        # כתיבת נתוני הכתובות
+        for result in results:
+            if result:
+                row = [
+                    result['full_address'],
+                    str(result['lat']),
+                    str(result['lon']),
+                    result['neighborhood']
+                ]
+                f.write(','.join(row) + '\n')
+                
+    print(f"[OK] רשימת כתובות שנמצאו עם קואורדינטות נשמרה בקובץ: {path}")
 
 def geocode_address(address):
     """
@@ -113,110 +169,34 @@ def read_addresses_from_file(file_path):
         print(f"[שגיאה] הקובץ {file_path} לא נמצא!")
         return []
         
-    with open(file_path, 'r', encoding='utf-8') as f:
-        addresses = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
-    
-    return addresses
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            addresses = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
+        print(f"[מידע] נקראו {len(addresses)} כתובות מהקובץ {file_path}")
+        return addresses
+    except Exception as e:
+        print(f"[שגיאה] בעיה בקריאת הקובץ {file_path}: {str(e)}")
+        return []
 
-def save_to_csv_files(results):
-    """שמירת התוצאות לקבצי CSV"""
-    # קריאת קבצים קיימים אם הם קיימים
-    famous_data = []
-    manual_data = []
+def create_future_use_file():
+    """יוצר או מעדכן את קובץ future_use.csv לשימוש עתידי"""
+    # יצירת תיקיית database אם לא קיימת
+    os.makedirs(DATABASE_DIR, exist_ok=True)
     
-    # קריאת קובץ המיקומים המפורסמים אם קיים
-    if os.path.exists(FAMOUS_LOCATIONS_OUTPUT):
-        try:
-            with open(FAMOUS_LOCATIONS_OUTPUT, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-                if lines:
-                    headers = lines[0].strip().split(',')
-                    for line in lines[1:]:
-                        values = line.strip().split(',')
-                        if len(values) >= len(headers):
-                            entry = {headers[i]: values[i] for i in range(len(headers))}
-                            famous_data.append(entry)
-        except:
-            print("[שגיאה] שגיאה בקריאת קובץ המיקומים המפורסמים הקיים")
+    path = FUTURE_USE_OUTPUT
     
-    # קריאת קובץ המיקומים הידניים אם קיים
-    if os.path.exists(MANUAL_LOCATIONS_OUTPUT):
-        try:
-            with open(MANUAL_LOCATIONS_OUTPUT, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-                if lines:
-                    headers = lines[0].strip().split(',')
-                    for line in lines[1:]:
-                        values = line.strip().split(',')
-                        if len(values) >= len(headers):
-                            entry = {headers[i]: values[i] for i in range(len(headers))}
-                            manual_data.append(entry)
-        except:
-            print("[שגיאה] שגיאה בקריאת קובץ המיקומים הידניים הקיים")
-    
-    # הכנת הכותרות לקבצים
-    famous_headers = ['שם מקום', 'תיאור', 'קו רוחב', 'קו אורך', 'כתובת', 'שכונה']
-    manual_headers = ['שם מקום', 'תיאור', 'קו רוחב', 'קו אורך', 'תאריך הוספה', 'מוסף על ידי', 'שכונה']
-    
-    # הוספת שדה שכונה אם לא קיים
-    for entry in famous_data:
-        if 'שכונה' not in entry:
-            entry['שכונה'] = 'לא ידוע'
-    
-    for entry in manual_data:
-        if 'שכונה' not in entry:
-            entry['שכונה'] = 'לא ידוע'
-    
-    # הכנת נתונים חדשים
-    today = time.strftime("%d/%m/%Y")
-    
-    # הוספת התוצאות החדשות
-    for result in results:
-        if result is None:
-            continue
+    # בדיקה אם הקובץ כבר קיים
+    if not os.path.exists(path):
+        # הכנת כותרות הקובץ (דוגמה לשדות שייתכן ויהיו שימושיים בעתיד)
+        headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה', 'קטגוריה', 'הערות']
+        
+        with open(path, 'w', encoding='utf-8') as f:
+            # כתיבת שורת הכותרות
+            f.write(','.join(headers) + '\n')
             
-        # הכנת הנתונים לשני הקבצים
-        place_name = result['full_address'].split(',')[0] if ',' in result['full_address'] else result['full_address']
-        
-        # הוספה לקובץ המיקומים המוכרים
-        new_famous = {
-            'שם מקום': place_name,
-            'תיאור': f"מיקום שנוסף באמצעות גאוקודינג",
-            'קו רוחב': str(result['lat']),
-            'קו אורך': str(result['lon']),
-            'כתובת': result['full_address'],
-            'שכונה': result['neighborhood']
-        }
-        famous_data.append(new_famous)
-        
-        # הוספה לקובץ המיקומים הידניים
-        new_manual = {
-            'שם מקום': place_name,
-            'תיאור': f"מיקום שנוסף באמצעות גאוקודינג",
-            'קו רוחב': str(result['lat']),
-            'קו אורך': str(result['lon']),
-            'תאריך הוספה': today,
-            'מוסף על ידי': "מערכת גאוקודינג",
-            'שכונה': result['neighborhood']
-        }
-        manual_data.append(new_manual)
-    
-    # שמירת הקבצים המעודכנים
-    # שמירת קובץ המיקומים המפורסמים
-    with open(FAMOUS_LOCATIONS_OUTPUT, 'w', encoding='utf-8') as f:
-        f.write(','.join(famous_headers) + '\n')
-        for entry in famous_data:
-            values = [str(entry.get(header, '')) for header in famous_headers]
-            f.write(','.join(values) + '\n')
-    
-    # שמירת קובץ המיקומים הידניים
-    with open(MANUAL_LOCATIONS_OUTPUT, 'w', encoding='utf-8') as f:
-        f.write(','.join(manual_headers) + '\n')
-        for entry in manual_data:
-            values = [str(entry.get(header, '')) for header in manual_headers]
-            f.write(','.join(values) + '\n')
-    
-    print(f"[OK] נתונים נשמרו בהצלחה לקבצי CSV")
+        print(f"[OK] קובץ נתונים עתידי נוצר בהצלחה: {path}")
+    else:
+        print(f"[מידע] קובץ נתונים עתידי כבר קיים: {path}")
 
 def main():
     print("[התחלה] התחלת תהליך המרת כתובות לקואורדינטות")
@@ -224,8 +204,12 @@ def main():
     # וידוא קיום תיקיות נדרשות
     ensure_directories()
     
+    # יצירת קובץ השימוש העתידי אם לא קיים
+    create_future_use_file()
+    
     # קריאת כתובות מהקובץ
     file_path = os.path.join(INPUT_DIR, INPUT_FILE)
+    print(f"[מידע] מנסה לקרוא כתובות מ: {file_path}")
     addresses = read_addresses_from_file(file_path)
     
     if not addresses:
@@ -254,13 +238,14 @@ def main():
     
     # שמירת תוצאות
     if results:
-        save_to_csv_files(results)
+        # שמירת הכתובות שנמצאו בקובץ CSV
+        save_found_addresses_to_file(results)
         
         # שמירת הקואורדינטות גם בקובץ JSON נוסף
         with open(os.path.join(OUTPUT_DIR, 'coordinates.json'), 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
     
-    # דוח סיכום
+    # שמירת כתובות שלא נמצאו
     if not_found:
         print(f"\n[אזהרה] {len(not_found)} כתובות לא נמצאו:")
         for addr in not_found:

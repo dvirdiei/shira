@@ -1,0 +1,42 @@
+# מפתחות API וקבצי תצורה
+ToMap/config.py
+
+# פייתון
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# קבצי לוג
+*.log
+logs/
+
+# תיקיות וירטואליות
+venv/
+ENV/
+
+# קבצי IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# קבצים זמניים
+.DS_Store
+Thumbs.db

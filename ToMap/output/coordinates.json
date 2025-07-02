@@ -1,8 +1,116 @@
 [
   {
-    "lat": 32.062721,
-    "lon": 34.770193,
-    "full_address": "שדרות רוטשילד 10, תל אביב",
-    "neighborhood": "Lev Tel Aviv"
+    "lat": 31.7903429,
+    "lon": 35.1940735,
+    "full_address": "הרב ריינס ירושלים",
+    "neighborhood": "Givat Shaul"
+  },
+  {
+    "lat": 31.7929006,
+    "lon": 35.2077533,
+    "full_address": "חירם ירושלים",
+    "neighborhood": "Romema"
+  },
+  {
+    "lat": 31.7936774,
+    "lon": 35.2267396,
+    "full_address": "שמעון הצדיק ירושלים",
+    "neighborhood": "Maalot Dafna"
+  },
+  {
+    "lat": 31.7652455,
+    "lon": 35.2169752,
+    "full_address": "הצפירה ירושלים",
+    "neighborhood": "German Colony"
+  },
+  {
+    "lat": 31.6878889,
+    "lon": 34.5747692,
+    "full_address": "מצפה ירושלים",
+    "neighborhood": "Barne'a"
+  },
+  {
+    "lat": 31.7147847,
+    "lon": 35.0009181,
+    "full_address": "קדרון ירושלים",
+    "neighborhood": "Ramat Bet Shemesh A"
+  },
+  {
+    "lat": 31.8346379,
+    "lon": 35.2327692,
+    "full_address": "שמחה הולצברג ירושלים",
+    "neighborhood": "Beit Hanina"
+  },
+  {
+    "lat": 31.8194725,
+    "lon": 35.238751,
+    "full_address": "ניב דוד ירושלים",
+    "neighborhood": "Shuafat"
+  },
+  {
+    "lat": 31.8365116,
+    "lon": 35.2343724,
+    "full_address": "מזל מאזניים ירושלים",
+    "neighborhood": "Beit Hanina"
+  },
+  {
+    "lat": 31.8183814,
+    "lon": 35.247599,
+    "full_address": "יושע מאיר ירושלים",
+    "neighborhood": "Pisgat Ze'ev"
+  },
+  {
+    "lat": 31.8281698,
+    "lon": 35.2438863,
+    "full_address": "השישה ירושלים",
+    "neighborhood": "Pisgat Ze'ev"
+  },
+  {
+    "lat": 31.8199206,
+    "lon": 35.2492867,
+    "full_address": "גבירצמן ירושלים",
+    "neighborhood": "Pisgat Ze'ev"
+  },
+  {
+    "lat": 31.7852472,
+    "lon": 35.175822,
+    "full_address": "קצנלבוגן ירושלים",
+    "neighborhood": "Yefe Nof"
+  },
+  {
+    "lat": 31.8161261,
+    "lon": 35.1914624,
+    "full_address": "בן זאב ישראל ירושלים",
+    "neighborhood": "Ramot"
+  },
+  {
+    "lat": 31.8149967,
+    "lon": 35.1920512,
+    "full_address": "אם הבנים ירושלים",
+    "neighborhood": "Ramot"
+  },
+  {
+    "lat": 31.7651179,
+    "lon": 35.2069973,
+    "full_address": "הטייסים ירושלים",
+    "neighborhood": "Old Katamon"
+  },
+  {
+    "lat": 31.7629148,
+    "lon": 35.206351,
+    "full_address": "המעפילים ירושלים",
+    "neighborhood": "San Simon"
+  },
+  {
+    "lat": 31.7652198,
+    "lon": 35.2137071,
+    "full_address": "תל חי ירושלים",
+    "neighborhood": "Greek Colony"
+  },
+  {
+    "lat": 31.7619685,
+    "lon": 35.2007791,
+    "full_address": "שמעוני ירושלים",
+    "neighborhood": "Rassco"
   }
 ]
