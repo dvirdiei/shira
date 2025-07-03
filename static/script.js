@@ -15,8 +15,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log("יוצר מפה...");
-        // יצירת המפה וקביעת המרכז לירושלים
-        var map = L.map('map').setView([31.7683, 35.2137], 13);
+        // יצירת המפה וקביעת המרכז לירושלים (ללא כפתורי zoom)
+        const jerusalemCoords = [31.7903429, 35.1940735];
+        var map = L.map('map', {
+            zoomControl: false,  // הסרת כפתורי + ו -
+            center: jerusalemCoords,  // קביעת מרכז קבוע לירושלים
+            zoom: 12
+        });
+        
+        // וידוא שהמפה תחזור לירושלים בכל פעם שהיא מתעדכנת
+        map.on('moveend', function() {
+            map.setView(jerusalemCoords, 12, {
+            animate: true,
+            duration: 1
+            });
+        });
         
         console.log("מוסיף שכבת מפה...");
         // הוספת שכבת מפה בסיסית

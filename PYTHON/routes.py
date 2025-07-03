@@ -7,7 +7,9 @@ from PYTHON.api_handlers import (
     get_manual_addresses_handler, 
     get_all_addresses_handler,
     get_missing_coordinates_handler,
-    mark_visited_handler
+    mark_visited_handler,
+    toggle_visit_status_handler,
+    delete_address_handler
 )
 import os
 
@@ -44,3 +46,13 @@ def register_routes(app):
     def mark_visited():
         """מעדכן את סטטוס הביקור של כתובת"""
         return mark_visited_handler(app.root_path)
+
+    @app.route('/api/toggle-visited', methods=['POST'])
+    def toggle_visited():
+        """מעדכן או מבטל את סטטוס הביקור של כתובת"""
+        return toggle_visit_status_handler(app.root_path)
+
+    @app.route('/api/delete-address', methods=['POST'])
+    def delete_address():
+        """מוחק כתובת ומעביר לקובץ deleted_addresses.csv"""
+        return delete_address_handler(app.root_path)
