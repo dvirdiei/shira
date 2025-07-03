@@ -89,6 +89,7 @@ function createSummaryInfo(addresses, missingAddresses) {
     return summaryHTML;
 }
 
+
 // פונקציה לפתיחה/סגירה של הסיכום
 function toggleSummary() {
     const summaryContent = document.getElementById('summaryContent');
@@ -104,6 +105,22 @@ function toggleSummary() {
         toggleButton.title = 'פתח סיכום';
     }
 }
+
+// סגירת הסיכום בטעינה ראשונית של הדף
+document.addEventListener('DOMContentLoaded', function() {
+    // המתנה קצרה לוודא שהאלמנטים נטענו
+    setTimeout(() => {
+        const summaryContent = document.getElementById('summaryContent');
+        const toggleButton = document.getElementById('summaryToggle');
+        
+        if (summaryContent && toggleButton) {
+            summaryContent.style.display = 'none';
+            toggleButton.textContent = '📋';
+            toggleButton.title = 'פתח סיכום';
+            console.log('📋 סיכום הוסתר בטעינה ראשונית');
+        }
+    }, 500); // המתנה של חצי שנייה לאחר טעינת הדף
+});
 
 // ייצוא הפונקציות
 window.loadAddressesFromCSV = loadAddressesFromCSV;
