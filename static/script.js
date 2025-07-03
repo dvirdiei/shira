@@ -24,9 +24,17 @@ document.addEventListener('DOMContentLoaded', function() {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19
         }).addTo(map);
-       
         
-       
+        // טעינת הכתובות מה-CSV והצגתן על המפה
+        if (typeof initializeAddressMap === 'function') {
+            initializeAddressMap(map).then(markers => {
+                console.log("כתובות נטענו בהצלחה על המפה");
+            }).catch(error => {
+                console.error("שגיאה בטעינת הכתובות:", error);
+            });
+        } else {
+            console.warn("פונקציית initializeAddressMap לא נמצאה - נטען את found.js");
+        }
         
         // אירוע לחיצה על המפה
         function onMapClick(e) {
@@ -42,7 +50,17 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         // טיפול בשגיאות
         console.error("שגיאה בטעינת המפה:", error);
-        document.getElementById('map-error').style.display = 'block';
-        document.getElementById('map-error').innerHTML = 'שגיאה בטעינת המפה: ' + error.message;
+        
+        // נסה ליצור אלמנט שגיאה אם הוא לא קיים
+        let errorElement = document.getElementById('map-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.id = 'map-error';
+            errorElement.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: red; color: white; padding: 20px; border-radius: 5px; z-index: 9999;';
+            document.body.appendChild(errorElement);
+        }
+        
+        errorElement.style.display = 'block';
+        errorElement.innerHTML = 'שגיאה בטעינת המפה: ' + error.message;
     }
 });

@@ -42,7 +42,7 @@ def save_not_found_to_file(not_found_list):
     path = os.path.join(database_dir, 'not_found_addresses.csv')
     
     # הכנת כותרות הקובץ
-    headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה']
+    headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה', 'ביקרנו']
     
     with open(path, 'w', encoding='utf-8') as f:
         # כתיבת שורת הכותרות
@@ -51,7 +51,7 @@ def save_not_found_to_file(not_found_list):
         # כתיבת הכתובות שלא נמצאו עם תאים ריקים למילוי ידני
         for addr in not_found_list:
             # יוצר שורה עם הכתובת והשאר ריקים
-            row = [addr, '', '', '']
+            row = [addr, '', '', '', 'לא']  # ברירת מחדל - לא ביקרנו
             f.write(','.join(row) + '\n')
             
     print(f"[OK] רשימת כתובות שלא נמצאו נשמרה בקובץ: {path} (מוכן למילוי ידני)")
@@ -69,7 +69,7 @@ def save_found_addresses_to_file(results):
     path = os.path.join(database_dir, 'found_addresses.csv')
     
     # הכנת כותרות הקובץ
-    headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה']
+    headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה', 'ביקרנו']
     
     with open(path, 'w', encoding='utf-8') as f:
         # כתיבת שורת הכותרות
@@ -82,7 +82,8 @@ def save_found_addresses_to_file(results):
                     result['full_address'],
                     str(result['lat']),
                     str(result['lon']),
-                    result['neighborhood']
+                    result['neighborhood'],
+                    'לא'  # ברירת מחדל - לא ביקרנו עדיין
                 ]
                 f.write(','.join(row) + '\n')
                 
@@ -188,7 +189,7 @@ def create_future_use_file():
     # בדיקה אם הקובץ כבר קיים
     if not os.path.exists(path):
         # הכנת כותרות הקובץ (דוגמה לשדות שייתכן ויהיו שימושיים בעתיד)
-        headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה', 'קטגוריה', 'הערות']
+        headers = ['כתובת', 'קו רוחב', 'קו אורך', 'שכונה', 'ביקרנו', 'קטגוריה', 'הערות']
         
         with open(path, 'w', encoding='utf-8') as f:
             # כתיבת שורת הכותרות
