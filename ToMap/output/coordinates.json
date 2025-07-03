@@ -112,5 +112,257 @@
     "lon": 35.2007791,
     "full_address": "שמעוני ירושלים",
     "neighborhood": "Rassco"
+  },
+  {
+    "lat": 31.7558774,
+    "lon": 35.1984422,
+    "full_address": "סן מרטין ירושלים",
+    "neighborhood": "Givat Mordekhay"
+  },
+  {
+    "lat": 31.7566112,
+    "lon": 35.2088586,
+    "full_address": "יוסי בן יועזר ירושלים",
+    "neighborhood": "Katamonim"
+  },
+  {
+    "lat": 32.084354,
+    "lon": 34.830505,
+    "full_address": "יוחנן בן זכאי ירושלים",
+    "neighborhood": "Har Shalom"
+  },
+  {
+    "lat": 31.7584402,
+    "lon": 35.1997501,
+    "full_address": "חננאל ירושלים",
+    "neighborhood": "Rassco"
+  },
+  {
+    "lat": 31.7603504,
+    "lon": 35.2123396,
+    "full_address": "בן גמלא ירושלים",
+    "neighborhood": "Greek Colony"
+  },
+  {
+    "lat": 31.7711428,
+    "lon": 35.2110849,
+    "full_address": "בן לברט ירושלים",
+    "neighborhood": "Kiryat Shmuel"
+  },
+  {
+    "lat": 31.7890609,
+    "lon": 35.1978385,
+    "full_address": "בן ציון ירושלים",
+    "neighborhood": "Givat Shaul"
+  },
+  {
+    "lat": 31.7499561,
+    "lon": 35.2012199,
+    "full_address": "בראל לוקר ירושלים",
+    "neighborhood": "Katamonim"
+  },
+  {
+    "lat": 31.7367905,
+    "lon": 35.1890104,
+    "full_address": "גבעת קנדה ירושלים",
+    "neighborhood": "Sharafat"
+  },
+  {
+    "lat": 31.7517236,
+    "lon": 35.2313574,
+    "full_address": "אלקחי מרדכי ירושלים",
+    "neighborhood": "East Talpiot"
+  },
+  {
+    "lat": 31.7472349,
+    "lon": 35.2326395,
+    "full_address": "דרזנר ירושלים",
+    "neighborhood": "East Talpiot"
+  },
+  {
+    "lat": 31.7540817,
+    "lon": 35.2197389,
+    "full_address": "דרך בית לחם ירושלים",
+    "neighborhood": "Talpiot"
+  },
+  {
+    "lat": 31.7384143,
+    "lon": 35.2119245,
+    "full_address": "דרך חברון ירושלים",
+    "neighborhood": "Beit Safafa"
+  },
+  {
+    "lat": 31.7305809,
+    "lon": 35.1893885,
+    "full_address": "הגננת ירושלים",
+    "neighborhood": "Gilo"
+  },
+  {
+    "lat": 31.731465049999997,
+    "lon": 35.19400221378082,
+    "full_address": "הנופך ירושלים",
+    "neighborhood": "Gilo"
+  },
+  {
+    "lat": 31.7814355,
+    "lon": 35.1898635,
+    "full_address": "הסופר ירושלים",
+    "neighborhood": "Beit HaKerem"
+  },
+  {
+    "lat": 31.7638563,
+    "lon": 35.2050785,
+    "full_address": "הפלמח ירושלים",
+    "neighborhood": "San Simon"
+  },
+  {
+    "lat": 31.7266679,
+    "lon": 35.2246037,
+    "full_address": "הרב יצחק ניסים ירושלים",
+    "neighborhood": "Homat Shmuel"
+  },
+  {
+    "lat": 31.7731194,
+    "lon": 35.1843249,
+    "full_address": "חקלאי זאב ירושלים",
+    "neighborhood": "Yefe Nof"
+  },
+  {
+    "lat": 31.7581551,
+    "lon": 35.176184,
+    "full_address": "מרקו ברוך ירושלים",
+    "neighborhood": "Ir Gannim"
+  },
+  {
+    "lat": 32.0549976,
+    "lon": 34.7845235,
+    "full_address": "נווה שאנן ירושלים",
+    "neighborhood": "Yad Eliyahu"
+  },
+  {
+    "lat": 31.7628984,
+    "lon": 35.2277298,
+    "full_address": "נעמי ירושלים",
+    "neighborhood": "Givat Hananya"
+  },
+  {
+    "lat": 31.7826454,
+    "lon": 35.226425,
+    "full_address": "נתן הנביא ירושלים",
+    "neighborhood": "Morasha"
+  },
+  {
+    "lat": 31.7314354,
+    "lon": 35.1889979,
+    "full_address": "צאלים ירושלים",
+    "neighborhood": "Gilo"
+  },
+  {
+    "lat": 31.7382449,
+    "lon": 35.1822743,
+    "full_address": "צביה ויצחק ירושלים",
+    "neighborhood": "Gilo"
+  },
+  {
+    "lat": 31.7585315,
+    "lon": 35.1840859,
+    "full_address": "קדיש לוז ירושלים",
+    "neighborhood": "Ramat Denya"
+  },
+  {
+    "lat": 31.7609127,
+    "lon": 35.1799499,
+    "full_address": "קובובי ירושלים",
+    "neighborhood": "Ramat Denya"
+  },
+  {
+    "lat": 31.7453351,
+    "lon": 35.2212527,
+    "full_address": "רבדים ירושלים",
+    "neighborhood": "Arnona"
+  },
+  {
+    "lat": 31.7536043,
+    "lon": 35.1869103,
+    "full_address": "רקם ירושלים",
+    "neighborhood": "Malha"
+  },
+  {
+    "lat": 31.79313135,
+    "lon": 35.247140038720545,
+    "full_address": "בצלאל ירושלים",
+    "neighborhood": "Mount Scopus"
+  },
+  {
+    "lat": 31.7898178,
+    "lon": 35.2089918,
+    "full_address": "החשמונאים ירושלים",
+    "neighborhood": "מקור ברוך"
+  },
+  {
+    "lat": 31.7799922,
+    "lon": 35.1938566,
+    "full_address": "שחר ירושלים",
+    "neighborhood": "Beit HaKerem"
+  },
+  {
+    "lat": 31.8382873,
+    "lon": 35.2357687,
+    "full_address": "אבא אחימאיר ירושלים",
+    "neighborhood": "Pisgat Ze'ev North"
+  },
+  {
+    "lat": 31.8072831,
+    "lon": 35.2380401,
+    "full_address": "בר כוכבא ירושלים",
+    "neighborhood": "French Hill"
+  },
+  {
+    "lat": 31.8197293,
+    "lon": 35.2401231,
+    "full_address": "גרשון מאיר ירושלים",
+    "neighborhood": "Pisgat Ze'ev"
+  },
+  {
+    "lat": 31.7783914,
+    "lon": 35.186808,
+    "full_address": "המייסדים ירושלים",
+    "neighborhood": "Yefe Nof"
+  },
+  {
+    "lat": 31.8013377,
+    "lon": 35.2384467,
+    "full_address": "ההגנה ירושלים",
+    "neighborhood": "French Hill"
+  },
+  {
+    "lat": 31.8183814,
+    "lon": 35.247599,
+    "full_address": "מאיר יושע ירושלים",
+    "neighborhood": "Pisgat Ze'ev"
+  },
+  {
+    "lat": 31.8431073,
+    "lon": 35.2441979,
+    "full_address": "מעגלות הרב פרדס ירושלים",
+    "neighborhood": "Neve Yaakov"
+  },
+  {
+    "lat": 31.8104555,
+    "lon": 35.2221732,
+    "full_address": "הרב עוזי קלכהיים ירושלים",
+    "neighborhood": "Ramat Shlomo"
+  },
+  {
+    "lat": 31.8405924,
+    "lon": 35.2403185,
+    "full_address": "שדרות נווה יעקב ירושלים",
+    "neighborhood": "Neve Yaakov"
+  },
+  {
+    "lat": 31.8185823,
+    "lon": 35.1938668,
+    "full_address": "הקונגרס הציוני ירושלים",
+    "neighborhood": "Ramot"
   }
 ]
