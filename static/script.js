@@ -23,13 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
             zoom: 12
         });
         
-        // וידוא שהמפה תחזור לירושלים בכל פעם שהיא מתעדכנת
-        map.on('moveend', function() {
-            map.setView(jerusalemCoords, 12, {
-            animate: true,
-            duration: 1
-            });
-        });
+        
         
         console.log("מוסיף שכבת מפה...");
         // הוספת שכבת מפה בסיסית
