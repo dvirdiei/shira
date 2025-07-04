@@ -1,5 +1,8 @@
 # מפתחות API וקבצי תצורה
 ToMap/config.py
+.env
+backend-render/.env
+frontend-replit/.env
 
 # פייתון
 __pycache__/

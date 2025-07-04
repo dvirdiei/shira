@@ -31,6 +31,85 @@
             z-index: 1000;
             max-width: 300px;
         }
+        
+        /* כפתורי ניהול נוחים לטלפון */
+        .control-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .control-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .control-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn.upload {
+            background: #28a745;
+        }
+        
+        .control-btn.upload:hover {
+            background: #1e7e34;
+        }
+        
+        .control-btn.reset {
+            background: #dc3545;
+        }
+        
+        .control-btn.reset:hover {
+            background: #c82333;
+        }
+        
+        .control-btn.summary {
+            background: #6f42c1;
+        }
+        
+        .control-btn.summary:hover {
+            background: #5a2d91;
+        }
+        
+        /* הסתרת input הקובץ */
+        #fileInput {
+            display: none;
+        }
+        
+        /* התאמה לטלפון */
+        @media (max-width: 768px) {
+            .control-buttons {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .control-btn {
+                flex: 1;
+                min-width: auto;
+                font-size: 14px;
+                padding: 12px 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -38,6 +117,16 @@
         🔄 טוען...
     </div>
     <div id="map"></div>
+    
+    <!-- כפתורי ניהול -->
+    <div class="control-buttons">
+        <button class="control-btn summary" onclick="showSummary()">📊 סיכום</button>
+        <button class="control-btn upload" onclick="document.getElementById('fileInput').click()">📁 העלאת קובץ</button>
+        <button class="control-btn reset" onclick="resetAllData()">🗑️ איפוס</button>
+    </div>
+    
+    <!-- Input נסתר להעלאת קבצים -->
+    <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(event)">
     
     <script>
         // Debug info element
@@ -65,6 +154,7 @@
     <script src="js/data-loader.js"></script>
     <script src="js/map-markers.js"></script>  
     <script src="js/user-actions.js"></script>
+    <script src="js/file-upload.js"></script>
     <script src="js/found.js"></script>
     <script src="js/script.js"></script>
     

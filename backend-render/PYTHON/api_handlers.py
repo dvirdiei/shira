@@ -357,3 +357,59 @@ def delete_address_handler(app_root_path):
             if os.path.exists(temp_path):
                 os.remove(temp_path)
         return jsonify({'success': False, 'message': str(e)}), 500
+
+def reset_all_data_handler(app_root_path):
+    """מוחק את כל הנתונים מכל הקבצים"""
+    try:
+        database_path = os.path.join(app_root_path, 'database')
+        
+        # רשימת הקבצים למחיקה
+        files_to_reset = [
+            'found_addresses.csv',
+            'not_found_addresses.csv', 
+            'future_use.csv',
+            'deleted_addresses.csv'
+        ]
+        
+        reset_count = 0
+        
+        for file_name in files_to_reset:
+            file_path = os.path.join(database_path, file_name)
+            
+            if os.path.exists(file_path):
+                try:
+                    # מחיקת תוכן הקובץ ויצירה מחדש עם headers בלבד
+                    with open(file_path, 'w', encoding='utf-8', newline='') as file:
+                        fieldnames = ['כתובת', 'שכונה', 'קו רוחב', 'קו אורך', 'ביקרנו']
+                        
+                        # עבור deleted_addresses נוסיף גם תאריך מחיקה
+                        if file_name == 'deleted_addresses.csv':
+                            fieldnames.append('תאריך_מחיקה')
+                        
+                        writer = csv.DictWriter(file, fieldnames=fieldnames)
+                        writer.writeheader()
+                    
+                    reset_count += 1
+                    print(f"איפוס קובץ: {file_name}")
+                    
+                except Exception as file_error:
+                    print(f"שגיאה באיפוס קובץ {file_name}: {file_error}")
+                    continue
+        
+        if reset_count > 0:
+            return jsonify({
+                'success': True,
+                'message': f'איפוס הושלם בהצלחה - {reset_count} קבצים נוקו',
+                'files_reset': reset_count
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'לא נמצאו קבצים לאיפוס'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'שגיאה באיפוס הנתונים: {str(e)}'
+        }), 500

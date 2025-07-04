@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת פונקציות גיאוקודינג</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5; 
+            direction: rtl;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { 
+            background: white; 
+            margin: 20px 0; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-family: monospace;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .loading { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        
+        input, textarea, button { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 16px;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        
+        .form-row { display: flex; gap: 10px; }
+        .form-row input { flex: 1; }
+        
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        h3 { color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ בדיקת פונקציות גיאוקודינג</h1>
+        
+        <!-- הוספת כתובת בודדת -->
+        <div class="section">
+            <h2>🏠 הוספת כתובת בודדת</h2>
+            <div class="form-row">
+                <input type="text" id="singleAddress" placeholder="כתובת (למשל: רחוב הדקל 15 ירושלים)" value="רחוב בן יהודה 12 ירושלים">
+                <input type="text" id="singleNeighborhood" placeholder="שכונה (אופציונלי)">
+            </div>
+            <button onclick="addSingleAddress()">חפש והוסף כתובת</button>
+            <div id="singleResult"></div>
+        </div>
+        
+        <!-- הוספת כמה כתובות -->
+        <div class="section">
+            <h2>📝 הוספת כמה כתובות בבת אחת</h2>
+            <textarea id="batchAddresses" rows="5" placeholder="כתובת אחת בכל שורה:
+רחוב יפו 10 ירושלים
+שדרות גולדה מאיר 5 ירושלים
+רחוב אגריפס 20 ירושלים">רחוב יפו 10 ירושלים
+שדרות גולדה מאיר 5 ירושלים
+רחוב אגריפס 20 ירושלים</textarea>
+            <button onclick="addBatchAddresses()">עבד כמה כתובות</button>
+            <div id="batchResult"></div>
+        </div>
+        
+        <!-- ניסוי חוזר -->
+        <div class="section">
+            <h2>🔄 ניסוי חוזר לכתובות שלא נמצאו</h2>
+            <p>מחפש שוב קואורדינטות עבור כתובות שנשמרו ב-not_found_addresses.csv</p>
+            <button onclick="retryGeocoding()">נסה שוב לחפש קואורדינטות</button>
+            <div id="retryResult"></div>
+        </div>
+        
+        <!-- בדיקת חיבור -->
+        <div class="section">
+            <h2>🔗 בדיקת חיבור לבאק אנד</h2>
+            <button onclick="testConnection()">בדוק חיבור</button>
+            <div id="connectionResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+        
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            container.appendChild(div);
+        }
+        
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        async function addSingleAddress() {
+            const address = document.getElementById('singleAddress').value.trim();
+            const neighborhood = document.getElementById('singleNeighborhood').value.trim();
+            
+            if (!address) {
+                addResult('singleResult', 'אנא הכנס כתובת', 'error');
+                return;
+            }
+            
+            clearResults('singleResult');
+            addResult('singleResult', `מחפש קואורדינטות עבור: ${address}`, 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/add-address`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        address: address,
+                        neighborhood: neighborhood
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addResult('singleResult', `✅ ${result.message}`, 'success');
+                    if (result.data) {
+                        const data = result.data;
+                        if (data.lat && data.lon) {
+                            addResult('singleResult', 
+                                `📍 קואורדינטות: ${data.lat}, ${data.lon} | שכונה: ${data.neighborhood}`, 
+                                'success'
+                            );
+                        } else {
+                            addResult('singleResult', 
+                                `📍 שכונה: ${data.neighborhood} (ללא קואורדינטות)`, 
+                                'info'
+                            );
+                        }
+                    }
+                } else {
+                    addResult('singleResult', `❌ ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult('singleResult', `❌ שגיאת חיבור: ${error.message}`, 'error');
+            }
+        }
+        
+        async function addBatchAddresses() {
+            const addressesText = document.getElementById('batchAddresses').value.trim();
+            
+            if (!addressesText) {
+                addResult('batchResult', 'אנא הכנס כתובות', 'error');
+                return;
+            }
+            
+            const addresses = addressesText.split('\\n')
+                .map(addr => addr.trim())
+                .filter(addr => addr.length > 0)
+                .map(addr => ({ address: addr }));
+            
+            if (addresses.length === 0) {
+                addResult('batchResult', 'לא נמצאו כתובות תקינות', 'error');
+                return;
+            }
+            
+            clearResults('batchResult');
+            addResult('batchResult', `מעבד ${addresses.length} כתובות...`, 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/batch-geocode`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        addresses: addresses
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addResult('batchResult', `✅ ${result.message}`, 'success');
+                    
+                    if (result.summary) {
+                        const s = result.summary;
+                        addResult('batchResult', 
+                            `📊 סיכום: ${s.found} נמצאו | ${s.not_found} לא נמצאו | ${s.duplicates} כפולות | ${s.errors} שגיאות`, 
+                            'info'
+                        );
+                    }
+                    
+                    if (result.results) {
+                        result.results.forEach(res => {
+                            if (res.status === 'found') {
+                                addResult('batchResult', 
+                                    `✅ ${res.address}: ${res.lat}, ${res.lon} (${res.neighborhood})`, 
+                                    'success'
+                                );
+                            } else if (res.status === 'not_found') {
+                                addResult('batchResult', 
+                                    `⚠️ ${res.address}: לא נמצאו קואורדינטות (${res.neighborhood})`, 
+                                    'info'
+                                );
+                            } else if (res.status === 'duplicate') {
+                                addResult('batchResult', 
+                                    `🔄 ${res.address}: כבר קיים`, 
+                                    'info'
+                                );
+                            } else {
+                                addResult('batchResult', 
+                                    `❌ ${res.address}: ${res.message}`, 
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                } else {
+                    addResult('batchResult', `❌ ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult('batchResult', `❌ שגיאת חיבור: ${error.message}`, 'error');
+            }
+        }
+        
+        async function retryGeocoding() {
+            clearResults('retryResult');
+            addResult('retryResult', 'מחפש שוב קואורדינטות לכתובות שלא נמצאו...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/retry-geocoding`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addResult('retryResult', `✅ ${result.message}`, 'success');
+                    
+                    if (result.processed > 0) {
+                        addResult('retryResult', 
+                            `📊 עובדו ${result.processed} כתובות, נמצאו קואורדינטות ל-${result.found}`, 
+                            'info'
+                        );
+                        
+                        if (result.updated_addresses && result.updated_addresses.length > 0) {
+                            addResult('retryResult', 
+                                `📍 כתובות שעודכנו: ${result.updated_addresses.join(', ')}`, 
+                                'success'
+                            );
+                        }
+                    }
+                } else {
+                    addResult('retryResult', `❌ ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult('retryResult', `❌ שגיאת חיבור: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testConnection() {
+            clearResults('connectionResult');
+            addResult('connectionResult', 'בודק חיבור לבאק אנד...', 'loading');
+            
+            try {
+                // בדיקת חיבור בסיסי
+                const response = await fetch(`${API_BASE_URL}/api/all-addresses`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('connectionResult', 
+                        `✅ חיבור תקין! נמצאו ${data.length} כתובות במערכת`, 
+                        'success'
+                    );
+                } else {
+                    addResult('connectionResult', 
+                        `⚠️ חיבור קיים אך יש בעיה: ${response.status}`, 
+                        'error'
+                    );
+                }
+                
+            } catch (error) {
+                addResult('connectionResult', 
+                    `❌ אין חיבור לבאק אנד: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+        
+        // בדיקה אוטומטית בטעינה
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>
