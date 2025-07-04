@@ -1,7 +1,7 @@
-// קובץ לניהול מארקרים ומפה
+// Frontend Map Markers - ניהול מארקרים ומפה
 // map-markers.js
 
-console.log('🗺️ map-markers.js נטען בהצלחה');
+console.log('🗺️ Frontend map-markers.js נטען בהצלחה');
 
 // פונקציה ליצירת אייקונים מותאמים אישית
 function createCustomIcons() {
@@ -47,6 +47,13 @@ function createCustomIcons() {
             iconSize: [30, 42],
             iconAnchor: [15, 42],
             popupAnchor: [0, -42]
+        }),
+        demo: L.divIcon({
+            className: 'custom-marker demo-marker',
+            html: '<div class="marker-pin demo">🧪</div>',
+            iconSize: [30, 42],
+            iconAnchor: [15, 42],
+            popupAnchor: [0, -42]
         })
     };
 }
@@ -57,7 +64,25 @@ function createPopupContent(address) {
     const statusIcon = address.visited ? "✅" : "❌";
     const statusClass = address.visited ? "status-visited" : "status-not-visited";
     
-
+    let sourceText, sourceIcon;
+    switch(address.source) {
+        case 'manual':
+            sourceText = "הוספה ידנית";
+            sourceIcon = "✋";
+            break;
+        case 'manual_corrected':
+            sourceText = "תיקון ידני";
+            sourceIcon = "🔧";
+            break;
+        case 'demo':
+            sourceText = "נתוני דמו";
+            sourceIcon = "🧪";
+            break;
+        default:
+            sourceText = "גיאוקודינג אוטומטי";
+            sourceIcon = "🤖";
+            break;
+    }
     
     return `
         <div class="popup-content" dir="rtl">
@@ -69,13 +94,28 @@ function createPopupContent(address) {
                         ${statusIcon} ${statusText}
                     </span>
                 </p>
-                
+                <p><strong>🔍 מקור:</strong> 
+                    <span class="source-${address.source}">
+                        ${sourceIcon} ${sourceText}
+                    </span>
+                </p>
+                <div class="coordinates">
+                    <small>🌍 קואורדינטות: ${address.lat.toFixed(6)}, ${address.lon.toFixed(6)}</small>
+                </div>
             </div>
             <div class="popup-actions">
-                <button onclick="toggleVisitStatus('${address.address}', ${address.visited})" 
-                        class="btn-visit ${address.visited ? 'cancel' : ''}">
-                    ${address.visited ? 'בטל ביקור' : 'סמן כביקור'}
-                </button>
+                ${address.source !== 'demo' ? `
+                    <button onclick="toggleVisitStatus('${address.address}', ${address.visited})" 
+                            class="btn-visit ${address.visited ? 'cancel' : ''}">
+                        ${address.visited ? 'בטל ביקור' : 'סמן כביקור'}
+                    </button>
+                    <button onclick="deleteAddress('${address.address}')" 
+                            class="btn-delete">
+                        🗑️ מחק נקודה
+                    </button>
+                ` : `
+                    <p style="color: orange; font-size: 12px;">⚠️ נתוני דמו - לא ניתן לעדכן</p>
+                `}
                 <button onclick="openInGoogleMaps(${address.lat}, ${address.lon})" 
                         class="btn-navigate">
                     נווט ב-Google Maps
@@ -83,10 +123,6 @@ function createPopupContent(address) {
                 <button onclick="openInWaze(${address.lat}, ${address.lon})" 
                         class="btn-navigate btn-waze">
                     נווט ב-Waze
-                </button>
-                <button onclick="deleteAddress('${address.address}')" 
-                        class="btn-delete">
-                    🗑️ מחק נקודה
                 </button>
             </div>
         </div>
@@ -102,7 +138,9 @@ function addAddressesToMap(map, addresses) {
         let icon;
         
         // בחירת אייקון לפי מקור וסטטוס
-        if (address.source === 'manual') {
+        if (address.source === 'demo') {
+            icon = icons.demo;
+        } else if (address.source === 'manual') {
             icon = address.visited ? icons.manualVisited : icons.manualNotVisited;
         } else if (address.source === 'manual_corrected') {
             icon = address.visited ? icons.correctedVisited : icons.correctedNotVisited;
@@ -117,7 +155,7 @@ function addAddressesToMap(map, addresses) {
         
         // הוספת פופאפ
         marker.bindPopup(createPopupContent(address), {
-            maxWidth: 300,
+            maxWidth: UI_CONFIG.popupMaxWidth,
             className: 'custom-popup'
         });
         
@@ -140,12 +178,15 @@ function addAddressesToMap(map, addresses) {
 // פונקציה עיקרית לאתחול המפה
 async function initializeAddressMap(mapInstance) {
     try {
-        // טעינת נתוני הכתובות
+        console.log('🚀 מתחיל אתחול מפה עם חיבור ל-Backend...');
+        
+        // טעינת נתוני הכתובות מה-Backend
         const addresses = await loadAddressesFromCSV();
         const missingAddresses = await loadMissingCoordinates();
         
         if (addresses.length === 0) {
-            console.warn("לא נמצאו כתובות להצגה");
+            console.warn("⚠️ לא נמצאו כתובות להצגה");
+            showNotification('לא נמצאו כתובות להצגה', 'warning');
             return;
         }
         
@@ -164,26 +205,37 @@ async function initializeAddressMap(mapInstance) {
         };
         summaryControl.addTo(mapInstance);
         
-        console.log(`הוצגו בהצלחה ${markers.length} כתובות על המפה`);
-        console.log(`${missingAddresses.length} כתובות ללא קואורדינטות`);
+        console.log(`✅ הוצגו בהצלחה ${markers.length} כתובות על המפה`);
+        console.log(`📊 ${missingAddresses.length} כתובות ללא קואורדינטות`);
+        
+        // הודעת הצלחה למשתמש
+        const demoCount = addresses.filter(addr => addr.source === 'demo').length;
+        if (demoCount > 0) {
+            showNotification(`נטענו ${addresses.length} כתובות (${demoCount} נתוני דמו)`, 'warning');
+        } else {
+            showNotification(`נטענו ${addresses.length} כתובות מהשרת`, 'success');
+        }
         
         // החזרת המארקרים לשימוש נוסף
         return markers;
         
     } catch (error) {
-        console.error("שגיאה באתחול מפת הכתובות:", error);
+        console.error("❌ שגיאה באתחול מפת הכתובות:", error);
         
         // הצגת הודעת שגיאה על המפה
         const errorPopup = L.popup()
-            .setLatLng([31.7683, 35.2137])
+            .setLatLng(MAP_CONFIG.center)
             .setContent(`
                 <div class="error-message" dir="rtl">
                     <h4 style="color: red;">❌ שגיאה בטעינת הכתובות</h4>
                     <p>${error.message}</p>
-                    <p><small>נסה לרענן את הדף או בדוק את החיבור לשרת</small></p>
+                    <p><small>בדוק את החיבור לשרת Backend</small></p>
+                    <p><small>או עדכן את כתובת ה-API ב-config.js</small></p>
                 </div>
             `)
             .openOn(mapInstance);
+            
+        showNotification('שגיאה בחיבור לשרת Backend', 'error');
     }
 }
 

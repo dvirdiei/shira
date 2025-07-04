@@ -1,20 +1,21 @@
-// קובץ לפעולות משתמש - ביקורים, ניווט ומחיקות
+// Frontend User Actions - פעולות משתמש עם API Backend
 // user-actions.js
 
-console.log('👤 user-actions.js נטען בהצלחה');
+console.log('👤 Frontend user-actions.js נטען בהצלחה');
 
 // פונקציות עזר לפעולות על הכתובות
 async function toggleVisitStatus(address, currentStatus) {
     try {
         const action = currentStatus ? 'unmark' : 'mark';
         const actionText = currentStatus ? 'מבטל ביקור' : 'מסמן כביקור';
-        console.log(`${actionText} עבור ${address}`);
+        console.log(`${actionText} עבור ${address} - שולח ל-Backend`);
         
-        // שליחת בקשה לשרת לעדכון הסטטוס
-        const response = await fetch('/api/toggle-visited', {
+        // שליחת בקשה ל-Backend API ב-Render
+        const response = await fetch(API_ENDPOINTS.toggleVisited, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ 
                 address: address,
@@ -38,7 +39,7 @@ async function toggleVisitStatus(address, currentStatus) {
         
     } catch (error) {
         console.error("שגיאה בעדכון הביקור:", error);
-        showNotification(`שגיאה בעדכון הביקור: ${error.message}`, 'error');
+        showNotification(`שגיאה בחיבור לשרת: ${error.message}`, 'error');
     }
 }
 
@@ -65,13 +66,14 @@ async function deleteAddress(address) {
     }
     
     try {
-        console.log(`מוחק את ${address}`);
+        console.log(`מוחק את ${address} - שולח ל-Backend`);
         
-        // שליחת בקשה לשרת למחיקת הכתובת
-        const response = await fetch('/api/delete-address', {
+        // שליחת בקשה ל-Backend API ב-Render למחיקת הכתובת
+        const response = await fetch(API_ENDPOINTS.deleteAddress, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ 
                 address: address
@@ -94,19 +96,8 @@ async function deleteAddress(address) {
         
     } catch (error) {
         console.error("שגיאה במחיקת הכתובת:", error);
-        showNotification(`שגיאה במחיקת הכתובת: ${error.message}`, 'error');
+        showNotification(`שגיאה בחיבור לשרת: ${error.message}`, 'error');
     }
-}
-
-// פונקציות ניווט
-function openInGoogleMaps(lat, lon) {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
-    window.open(url, '_blank');
-}
-
-function openInWaze(lat, lon) {
-    const url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
-    window.open(url, '_blank');
 }
 
 // פונקציות עזר להצגת הודעות למשתמש
@@ -141,7 +132,7 @@ function showNotification(message, type = 'success') {
                 notification.parentNode.removeChild(notification);
             }
         }, 300);
-    }, 3000);
+    }, UI_CONFIG.notificationDuration);
 }
 
 // הוספת אנימציות CSS
@@ -168,8 +159,37 @@ style.textContent = `
             opacity: 0;
         }
     }
+    
+    .alert-success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+    
+    .alert-error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    
+    .alert-warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+    }
 `;
 document.head.appendChild(style);
+
+// פונקציות ניווט
+function openInGoogleMaps(lat, lon) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+    window.open(url, '_blank');
+}
+
+function openInWaze(lat, lon) {
+    const url = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+    window.open(url, '_blank');
+}
 
 // ייצוא הפונקציות
 window.toggleVisitStatus = toggleVisitStatus;
@@ -177,5 +197,4 @@ window.markAsVisited = markAsVisited;
 window.deleteAddress = deleteAddress;
 window.openInGoogleMaps = openInGoogleMaps;
 window.openInWaze = openInWaze;
-window.showNotification = showNotification;
 window.showNotification = showNotification;

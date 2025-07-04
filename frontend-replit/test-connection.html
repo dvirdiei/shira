@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת חיבור לבאק אנד</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .loading { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔗 בדיקת חיבור לבאק אנד</h1>
+    
+    <button onclick="testConnection()">בדוק חיבור</button>
+    <button onclick="testAPI()">בדוק API</button>
+    <button onclick="clearResults()">נקה תוצאות</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000';
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(message, type = 'loading') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        async function testConnection() {
+            addResult('🔄 בודק חיבור ל-' + API_BASE_URL, 'loading');
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/api/all-addresses', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                addResult(`✅ תגובה התקבלה! סטטוס: ${response.status} ${response.statusText}`, 'success');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`📊 נתונים התקבלו: ${data.length} כתובות`, 'success');
+                    addResult(`🔍 דוגמה: ${JSON.stringify(data.slice(0, 2), null, 2)}`, 'success');
+                } else {
+                    addResult(`❌ שגיאת שרת: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ שגיאת חיבור: ${error.message}`, 'error');
+                addResult(`🔧 פרטי שגיאה: ${error.name}`, 'error');
+            }
+        }
+        
+        async function testAPI() {
+            addResult('🧪 בודק את כל נקודות הקצה של API...', 'loading');
+            
+            const endpoints = [
+                '/api/all-addresses',
+                '/api/missing-coordinates'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(API_BASE_URL + endpoint);
+                    if (response.ok) {
+                        addResult(`✅ ${endpoint}: פועל`, 'success');
+                    } else {
+                        addResult(`❌ ${endpoint}: שגיאה ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ ${endpoint}: לא זמין - ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // בדיקה אוטומטית בטעינה
+        window.onload = function() {
+            addResult('🚀 דף בדיקה נטען', 'success');
+            testConnection();
+        };
+    </script>
+</body>
+</html>

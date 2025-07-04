@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הנוסע המתמיד - ירושלים</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        /* דיבגינג CSS */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f0f0f0;
+        }
+        #map { 
+            height: 100vh; 
+            width: 100%; 
+            background-color: #ccc;
+            border: 2px solid red; /* כדי לראות את הגבולות */
+        }
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 1000;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info" id="debugInfo">
+        🔄 טוען...
+    </div>
+    <div id="map"></div>
+    
+    <script>
+        // Debug info element
+        const debugInfo = document.getElementById('debugInfo');
+        function updateDebug(message) {
+            console.log(message);
+            debugInfo.innerHTML += '<br>' + message;
+        }
+        
+        updateDebug('🚀 HTML נטען');
+        updateDebug('📍 איתור map element: ' + (document.getElementById('map') ? 'קיים' : 'לא נמצא'));
+    </script>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        updateDebug('🗺️ Leaflet נטען: ' + (typeof L !== 'undefined' ? 'כן' : 'לא'));
+    </script>
+    
+    <!-- טעינת הקבצים המודולריים בסדר הנכון -->
+    <script src="js/config.js"></script>
+    <script>
+        updateDebug('⚙️ Config נטען, API_BASE_URL: ' + (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'לא מוגדר'));
+    </script>
+    
+    <script src="js/data-loader.js"></script>
+    <script src="js/map-markers.js"></script>  
+    <script src="js/user-actions.js"></script>
+    <script src="js/found.js"></script>
+    <script src="js/script.js"></script>
+    
+    <script>
+        updateDebug('✅ כל הקבצים נטענו');
+        // בדיקה שהמפה אכן נוצרה
+        setTimeout(() => {
+            const mapElement = document.getElementById('map');
+            const hasMapContent = mapElement && mapElement.children.length > 0;
+            updateDebug('🗺️ מפה נוצרה: ' + (hasMapContent ? 'כן' : 'לא'));
+        }, 2000);
+    </script>
+</body>
+</html>
