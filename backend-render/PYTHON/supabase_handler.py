@@ -86,11 +86,11 @@ class SupabaseHandler:
                     formatted_addr = {
                         'address': addr.get('address', ''),
                         'city': addr.get('city', ''),
-                        'neighborhood': addr.get('neighborhood', 'לא ידוע'),
+                        'neighborhood': addr.get('neighborhood', addr.get('city', 'לא ידוע')),  # אם אין neighborhood, השתמש ב-city
                         'lat': addr.get('latitude'),
                         'lon': addr.get('longitude'), 
-                        'visited': addr.get('visited', False),
-                        'source': addr.get('source_file', 'unknown'),
+                        'visited': addr.get('visited', False),  # ברירת מחדל false אם אין עמודה
+                        'source': addr.get('source', addr.get('source_file', 'unknown')),  # נסה source ואז source_file
                         'id': addr.get('id'),
                         'created_at': addr.get('created_at')
                     }
