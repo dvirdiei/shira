@@ -1,27 +1,50 @@
 # 🔧 Backend - הנוסע המתמיד
-**Backend API ב-Render עם Database ו-CORS לFrontend**
+**Backend API ב-Render עם Supabase Database**
 
-## 🔒 אבטחה וההגדרה ראשונית
+## � Quick Start - התחלה מהירה
 
-### ⚠️ הגדרת מפתחות API
-**חשוב מאוד לאבטחה:**
+### For Production (Render):
+1. **Read:** [QUICK_SETUP.md](QUICK_SETUP.md) - הגדרה ב-5 דקות
+2. **Detailed:** [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) - מדריך מפורט
 
-1. **העתק את `.env.example` ל-`.env`**
-2. **החלף את המפתח הדמה במפתח האמיתי שלך**
-3. **לעולם אל תשתף את קובץ `.env` או תעלה אותו לגיט!**
-
+### For Development (Local):
 ```bash
-# העתק את קובץ הדוגמה
+# 1. Copy environment file
 cp .env.example .env
 
-# ערוך את הקובץ והזן את המפתחות האמיתיים
-# GEOCODING_API_KEY=your_real_api_key_here
+# 2. Edit .env with your Supabase credentials
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run locally
+python main.py
 ```
 
-### 🛡️ מה מוגן?
-- קובץ `.env` מוגן ב-`.gitignore` ולא יעלה לגיט
-- מפתחות API לא נשמרים בקוד
-- כל המפתחות נטענים ממשתני סביבה
+## 🏗️ Architecture - ארכיטקטורה
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend API    │    │   Supabase DB   │
+│   (Replit)      │───▶│   (Render)       │───▶│   (Cloud)       │
+│   Static HTML   │    │   Flask + CORS   │    │   PostgreSQL    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+## 🔒 Environment Setup - הגדרת סביבה
+
+### Local Development
+```bash
+# .env file (copy from .env.example)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your_service_role_key
+MAPS_CO_API_KEY=your_geocoding_key  # optional
+```
+
+### Production (Render)
+הוסף Environment Variables ב-Render Dashboard:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_KEY`
+- `MAPS_CO_API_KEY` (optional)
 
 ## 📁 מבנה הקבצים
 ```
