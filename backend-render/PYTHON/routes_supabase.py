@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Flexible Routes for הנוסע המתמיד  
-תומך ב-Supabase, MongoDB או CSV בהתאם למשתני הסביבה
+Supabase Routes for הנוסע המתמיד  
+תומך ב-Supabase בלבד
 """
 
 import os
@@ -13,80 +13,22 @@ logger = logging.getLogger(__name__)
 # יצירת Blueprint
 api = Blueprint('api', __name__)
 
-def get_database_type():
-    """זיהוי אוטומטי של סוג בסיס הנתונים"""
-    if os.getenv('SUPABASE_URL') and os.getenv('SUPABASE_SERVICE_KEY'):
-        return 'supabase'
-    elif os.getenv('MONGODB_CONNECTION_STRING'):
-        return 'mongodb'
-    else:
-        return 'csv'
-
-# זיהוי סוג בסיס הנתונים
-DATABASE_TYPE = get_database_type()
-logger.info(f"🗄️  משתמש בבסיס נתונים: {DATABASE_TYPE.upper()}")
-
-# ייבוא ה-handlers המתאימים
+# ייבוא Supabase handlers
 try:
-    if DATABASE_TYPE == 'supabase':
-        from .api_handlers_supabase import (
-            handle_get_addresses,
-            handle_add_address, 
-            handle_batch_geocode,
-            handle_reset_data,
-            handle_get_statistics,
-            handle_retry_geocoding,
-            handle_test_connection
-        )
-        logger.info("✅ נטען Supabase handler")
-        
-    elif DATABASE_TYPE == 'mongodb':
-        from .api_handlers_mongo import (
-            handle_get_addresses,
-            handle_add_address,
-            handle_batch_geocode, 
-            handle_reset_data,
-            handle_get_statistics,
-            handle_retry_geocoding,
-            handle_test_connection
-        )
-        logger.info("✅ נטען MongoDB handler")
-        
-    else:  # CSV fallback
-        from .api_handlers import (
-            handle_get_addresses,
-            handle_add_address,
-            handle_batch_geocode,
-            handle_reset_data,
-            handle_get_statistics,
-            handle_retry_geocoding
-        )
-        
-        def handle_test_connection():
-            return {'success': True, 'message': 'CSV mode - אין צורך בחיבור'}
-            
-        logger.info("✅ נטען CSV handler")
-        
+    from .api_handlers_supabase import (
+        handle_get_addresses,
+        handle_add_address, 
+        handle_batch_geocode,
+        handle_reset_data,
+        handle_get_statistics,
+        handle_retry_geocoding,
+        handle_test_connection
+    )
+    logger.info("✅ נטען Supabase handler")
+    
 except ImportError as e:
-    logger.error(f"❌ שגיאה בטעינת handlers: {e}")
-    # fallback ל-CSV handlers
-    try:
-        from .api_handlers import (
-            handle_get_addresses,
-            handle_add_address,
-            handle_batch_geocode,
-            handle_reset_data,
-            handle_get_statistics,
-            handle_retry_geocoding
-        )
-        
-        def handle_test_connection():
-            return {'success': True, 'message': 'CSV fallback mode'}
-            
-        DATABASE_TYPE = 'csv'
-        logger.warning("⚠️  נפל חזרה ל-CSV mode")
-    except ImportError:
-        logger.error("❌ לא ניתן לטעון שום handler!")
+    logger.error(f"❌ שגיאה בטעינת Supabase handlers: {e}")
+    raise
 
 # Routes
 @api.route('/health', methods=['GET'])
@@ -94,8 +36,8 @@ def health_check():
     """בדיקת תקינות השרת"""
     return jsonify({
         'status': 'healthy',
-        'database_type': DATABASE_TYPE,
-        'message': f'השרת פועל עם {DATABASE_TYPE.upper()}'
+        'database_type': 'supabase',
+        'message': 'השרת פועל עם SUPABASE'
     })
 
 @api.route('/addresses', methods=['GET'])
@@ -279,17 +221,9 @@ def test_connection():
 def database_info():
     """מידע על בסיס הנתונים הנוכחי"""
     info = {
-        'database_type': DATABASE_TYPE,
-        'description': {
-            'supabase': 'Supabase - בסיס נתונים ענן מתקדם',
-            'mongodb': 'MongoDB Atlas - בסיס נתונים ענן NoSQL',
-            'csv': 'CSV קבצים - מצב פיתוח מקומי'
-        }.get(DATABASE_TYPE, 'לא ידוע'),
-        'features': {
-            'supabase': ['⚡ מהיר', '🔐 בטוח', '📊 ממשק ניהול', '🆓 חינמי'],
-            'mongodb': ['🌍 גלובלי', '🔄 גמיש', '📈 סקלאבילי'],
-            'csv': ['🛠️ פיתוח', '📁 מקומי', '🚀 קל להתחלה']
-        }.get(DATABASE_TYPE, [])
+        'database_type': 'supabase',
+        'description': 'Supabase - בסיס נתונים ענן מתקדם',
+        'features': ['⚡ מהיר', '🔐 בטוח', '📊 ממשק ניהול', '🆓 חינמי']
     }
     
     return jsonify({

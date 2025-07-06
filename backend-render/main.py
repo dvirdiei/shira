@@ -1,10 +1,26 @@
 """
-Backend API Server for הנוסע המתמיד
-Deployed on Render - supports Supabase!
+Backend API - הנוסע המתמיד
+Deployed on Render - supports Supabase only!
 """
+import sys
+import os
+import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
-import os
+
+# הגדרת לוגינג
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# בדיקה אם Supabase מוגדר
+if os.getenv('SUPABASE_URL') and os.getenv('SUPABASE_SERVICE_KEY'):
+    print("🚀 Starting with Supabase!")
+    from PYTHON.routes_supabase import api
+    database_type = 'supabase'
+else:
+    print("❌ Supabase configuration missing!")
+    print("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY")
+    sys.exit(1)
 import logging
 from dotenv import load_dotenv
 
@@ -21,9 +37,9 @@ if os.getenv('SUPABASE_URL') and os.getenv('SUPABASE_SERVICE_KEY'):
     from PYTHON.routes_supabase import api
     database_type = 'supabase'
 else:
-    print("📁 Starting with CSV (fallback)")
-    from PYTHON.routes import register_routes
-    database_type = 'csv'
+    print("❌ Supabase configuration missing!")
+    print("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY")
+    sys.exit(1)
 
 # יצירת אפליקציית Flask
 app = Flask(__name__)
@@ -64,14 +80,9 @@ def home():
         'description': f'API Server running with {database_type.upper()} database'
     })
 
-# רישום routes
-if database_type == 'supabase':
-    app.register_blueprint(api, url_prefix='/api')
-    print(f"✅ Supabase API routes registered")
-else:
-    # CSV mode
-    register_routes(app)
-    print("✅ CSV routes registered")
+# רישום routes - Supabase בלבד
+app.register_blueprint(api, url_prefix='/api')
+print(f"✅ Supabase API routes registered")
 
 @app.route('/health')
 def health_check():

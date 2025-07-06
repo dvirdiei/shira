@@ -2,5 +2,6 @@
 חבילת PYTHON - מכילה את כל הקוד של Flask שקשור ל-main.py
 """
 
-from .api_handlers import *
-from .routes import register_routes
+# ייבוא מודולי Supabase בלבד
+from .api_handlers_supabase import *
+from .routes_supabase import api
