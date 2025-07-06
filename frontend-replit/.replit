@@ -1,0 +1,31 @@
+[env]
+PORT = "3000"
+
+[nix]
+channel = "stable-23.05"
+
+[deployment]
+run = ["python3", "main.py"]
+deploymentTarget = "static"
+
+[interpreter]
+command = ["python3", "main.py"]
+
+[languages.html]
+pattern = "**/*.html"
+[languages.html.languageServer]
+start = "vscode-html-language-server --stdio"
+[languages.html.languageServer.initializationOptions]
+provideFormatter = true
+
+[languages.css]
+pattern = "**/*.css"
+[languages.css.languageServer]
+start = "vscode-css-language-server --stdio"
+[languages.css.languageServer.initializationOptions]
+provideFormatter = true
+
+[languages.javascript]
+pattern = "**/*.js"
+[languages.javascript.languageServer]
+start = "typescript-language-server --stdio"

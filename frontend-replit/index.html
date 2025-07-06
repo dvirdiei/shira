@@ -149,6 +149,21 @@
     <script src="js/config.js"></script>
     <script>
         updateDebug('⚙️ Config נטען, API_BASE_URL: ' + (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'לא מוגדר'));
+        
+        // בדיקה מהירה של חיבור לבאק אנד
+        if (typeof API_BASE_URL !== 'undefined') {
+            fetch(API_BASE_URL + '/api/all-addresses')
+                .then(response => {
+                    updateDebug('🌐 חיבור לבאק אנד: ' + (response.ok ? '✅ עובד' : '❌ שגיאה'));
+                    return response.json();
+                })
+                .then(data => {
+                    updateDebug('📊 כתובות בבאק אנד: ' + (Array.isArray(data) ? data.length : 'לא ידוע'));
+                })
+                .catch(error => {
+                    updateDebug('❌ שגיאת חיבור: ' + error.message);
+                });
+        }
     </script>
     
     <script src="js/data-loader.js"></script>

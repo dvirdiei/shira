@@ -1,11 +1,29 @@
 """
 Backend API Server for הנוסע המתמיד
-Deployed on Render - serves data to Frontend on Replit
+Deployed on Render - supports Supabase!
 """
-from flask import Flask, render_template, jsonify
+from flask import Flask, jsonify
 from flask_cors import CORS
-from PYTHON.routes import register_routes
 import os
+import logging
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# הגדרת לוגינג
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# בדיקה אם Supabase מוגדר
+if os.getenv('SUPABASE_URL') and os.getenv('SUPABASE_SERVICE_KEY'):
+    print("� Starting with Supabase!")
+    from PYTHON.routes_supabase import api
+    database_type = 'supabase'
+else:
+    print("📁 Starting with CSV (fallback)")
+    from PYTHON.routes import register_routes
+    database_type = 'csv'
 
 # יצירת אפליקציית Flask
 app = Flask(__name__)
@@ -26,28 +44,43 @@ def home():
     """דף הבית של ה-Backend API"""
     return jsonify({
         'service': 'הנוסע המתמיד Backend API',
-        'version': '1.0',
+        'version': '2.0',
         'status': 'online',
+        'database_type': database_type,
         'endpoints': [
+            '/api/health',
+            '/api/addresses',
             '/api/all-addresses',
-            '/api/missing-coordinates', 
+            '/api/missing-coordinates',
+            '/api/add-address',
+            '/api/batch-geocode',
             '/api/toggle-visited',
-            '/api/delete-address'
+            '/api/delete-address',
+            '/api/reset-data',
+            '/api/reset-all-data',
+            '/api/statistics',
+            '/api/test-connection'
         ],
-        'frontend': 'Connect from Replit Frontend',
-        'message': 'Backend מוכן לשירות! 🚀'
+        'description': f'API Server running with {database_type.upper()} database'
     })
+
+# רישום routes
+if database_type == 'supabase':
+    app.register_blueprint(api, url_prefix='/api')
+    print(f"✅ Supabase API routes registered")
+else:
+    # CSV mode
+    register_routes(app)
+    print("✅ CSV routes registered")
 
 @app.route('/health')
 def health_check():
     """בדיקת תקינות השרת"""
     return jsonify({
         'status': 'healthy',
-        'message': 'Backend working properly'
+        'database_type': database_type,
+        'message': f'Backend working with {database_type.upper()}'
     })
-
-# רישום כל הנתבים
-register_routes(app)
 
 if __name__ == '__main__':
     # בסביבת פיתוח
