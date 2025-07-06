@@ -7,7 +7,7 @@ Migration script from CSV to Supabase for הנוסע המתמיד
 
 import os
 import sys
-import pandas as pd
+import csv
 import logging
 from typing import List, Dict
 from datetime import datetime
@@ -18,6 +18,13 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # הגדרת לוגינג
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# ייבוא מודולים פנימיים
+try:
+    from PYTHON.supabase_handler import get_supabase_handler
+except ImportError:
+    logger.error("לא ניתן לייבא את supabase_handler")
+    sys.exit(1)
 
 def migrate_to_supabase_direct():
     """מיגרציה ישירה עם פרטי Supabase"""
@@ -102,24 +109,41 @@ def read_csv_files() -> List[Dict]:
         if os.path.exists(file_path):
             try:
                 logger.info(f"קורא קובץ: {csv_file}")
-                df = pd.read_csv(file_path, encoding='utf-8')
                 
-                # המרה לרשימת dictionaries
-                for _, row in df.iterrows():
-                    address_data = {
-                        'address': str(row.get('address', '')).strip(),
-                        'city': str(row.get('city', '')).strip(),
-                        'latitude': row.get('latitude') if pd.notna(row.get('latitude')) else None,
-                        'longitude': row.get('longitude') if pd.notna(row.get('longitude')) else None,
-                        'source_file': csv_file,
-                        'created_at': datetime.now().isoformat()
-                    }
+                # קריאת CSV עם המודול הסטנדרטי
+                with open(file_path, 'r', encoding='utf-8') as csvfile:
+                    reader = csv.DictReader(csvfile)
                     
-                    # הוספה רק אם יש כתובת
-                    if address_data['address'] and address_data['address'] != 'nan':
-                        all_addresses.append(address_data)
+                    for row in reader:
+                        # בדיקה אם הערכים קיימים ולא ריקים
+                        latitude = row.get('latitude')
+                        longitude = row.get('longitude')
+                        
+                        # המרה ל-float אם אפשר, אחרת None
+                        try:
+                            latitude = float(latitude) if latitude and latitude.strip() and latitude != 'nan' else None
+                        except (ValueError, AttributeError):
+                            latitude = None
+                            
+                        try:
+                            longitude = float(longitude) if longitude and longitude.strip() and longitude != 'nan' else None
+                        except (ValueError, AttributeError):
+                            longitude = None
+                        
+                        address_data = {
+                            'address': str(row.get('address', '')).strip(),
+                            'city': str(row.get('city', '')).strip(),
+                            'latitude': latitude,
+                            'longitude': longitude,
+                            'source_file': csv_file,
+                            'created_at': datetime.now().isoformat()
+                        }
+                        
+                        # הוספה רק אם יש כתובת
+                        if address_data['address'] and address_data['address'] != 'nan':
+                            all_addresses.append(address_data)
                 
-                logger.info(f"נמצאו {len(df)} כתובות ב-{csv_file}")
+                logger.info(f"נמצאו כתובות ב-{csv_file}")
                 
             except Exception as e:
                 logger.error(f"שגיאה בקריאת {csv_file}: {e}")
@@ -138,7 +162,7 @@ def read_csv_files() -> List[Dict]:
             seen_addresses.add(key)
             unique_addresses.append(addr)
     
-    logger.info(f"סה\"כ כתובות ייחודיות: {len(unique_addresses)}")
+    logger.info(f"סה\"ט כתובות ייחודיות: {len(unique_addresses)}")
     return unique_addresses
 
 def migrate_to_supabase():

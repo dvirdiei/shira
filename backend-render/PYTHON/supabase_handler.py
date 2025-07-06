@@ -8,7 +8,6 @@ import os
 import logging
 from typing import List, Dict, Optional, Tuple
 from supabase import create_client, Client
-import pandas as pd
 from datetime import datetime
 
 # הגדרת לוגינג

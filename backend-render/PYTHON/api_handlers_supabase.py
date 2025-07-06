@@ -7,7 +7,6 @@ API Handlers for Supabase - הנוסע המתמיד
 import logging
 from flask import jsonify, request
 from typing import Dict, List, Optional
-import pandas as pd
 from datetime import datetime
 
 from .supabase_handler import get_supabase_handler
