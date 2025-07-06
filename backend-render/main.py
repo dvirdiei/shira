@@ -7,6 +7,10 @@ import os
 import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+# טעינת משתני סביבה מקובץ .env
+load_dotenv()
 
 # הגדרת לוגינג
 logging.basicConfig(level=logging.INFO)
