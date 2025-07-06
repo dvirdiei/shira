@@ -93,9 +93,14 @@ def migrate_to_supabase_direct():
         return False
 
 def read_csv_files() -> List[Dict]:
-    """קריאת כל קבצי ה-CSV"""
+    """קריאת כל קבצי ה-CSV (אם קיימים)"""
     database_dir = os.path.join(os.path.dirname(__file__), 'database')
     all_addresses = []
+    
+    # בדיקה אם תיקיית database קיימת
+    if not os.path.exists(database_dir):
+        logger.warning("תיקיית database לא נמצאה - החזרת רשימה ריקה")
+        return all_addresses
     
     csv_files = [
         'addresses_cleaned.csv',
