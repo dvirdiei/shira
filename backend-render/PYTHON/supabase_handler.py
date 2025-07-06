@@ -79,7 +79,24 @@ class SupabaseHandler:
             
             if result.data:
                 logger.info(f"נמצאו {len(result.data)} כתובות")
-                return result.data
+                
+                # המרת הנתונים לפורמט שה-Frontend מצפה לו
+                formatted_addresses = []
+                for addr in result.data:
+                    formatted_addr = {
+                        'address': addr.get('address', ''),
+                        'city': addr.get('city', ''),
+                        'neighborhood': addr.get('neighborhood', 'לא ידוע'),
+                        'lat': addr.get('latitude'),
+                        'lon': addr.get('longitude'), 
+                        'visited': addr.get('visited', False),
+                        'source': addr.get('source_file', 'unknown'),
+                        'id': addr.get('id'),
+                        'created_at': addr.get('created_at')
+                    }
+                    formatted_addresses.append(formatted_addr)
+                
+                return formatted_addresses
             else:
                 logger.info("לא נמצאו כתובות")
                 return []
