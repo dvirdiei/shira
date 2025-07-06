@@ -231,6 +231,21 @@ def database_info():
         'database_info': info
     })
 
+# נתיב לכתובות - פורמט לתאימות עם Frontend הישן
+@api.route('/addresses-array', methods=['GET'])
+def get_addresses_array():
+    """קבלת כל הכתובות כמערך - לתאימות עם Frontend"""
+    try:
+        result = handle_get_addresses()
+        if result.get('success'):
+            # החזרת מערך ישירות במקום אובייקט
+            return jsonify(result.get('addresses', []))
+        else:
+            return jsonify([])
+    except Exception as e:
+        logger.error(f"שגיאה ב-/addresses-array: {e}")
+        return jsonify([])
+
 # Flask error handlers
 @api.errorhandler(404)
 def not_found(error):

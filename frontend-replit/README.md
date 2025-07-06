@@ -1,6 +1,25 @@
 # 🎨 Frontend - הנוסע המתמיד
 **Frontend ב-Replit עם חיבור ל-Backend ב-Render**
 
+## 🔧 הגדרה מהירה
+
+### צעד 1: עדכון Backend URL
+ערוך את `js/config.js` והחלף:
+```javascript
+const RENDER_API_URL = 'https://your-render-app.onrender.com';  // 🔄 עדכן את זה!
+```
+
+עם הURL האמיתי של השרת שלך ב-Render.
+
+### צעד 2: בדיקה מקומית
+1. פתח את `index.html` בדפדפן
+2. פתח Developer Tools (F12)
+3. בדוק שאין שגיאות בConsole
+4. ודא שהAPI נטען: "✅ Backend זמין ומוכן!"
+
+### צעד 3: העלאה ל-Replit
+העלה את כל התיקייה frontend-replit ל-Replit
+
 ## 📁 מבנה הקבצים
 ```
 frontend-replit/

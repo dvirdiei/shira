@@ -2,8 +2,17 @@
 // data-loader.js
 
 console.log('📊 Frontend data-loader.js נטען בהצלחה');
-console.log('🔗 API_BASE_URL:', API_BASE_URL);
-console.log('🔗 API_ENDPOINTS:', API_ENDPOINTS);
+
+// בדיקת תלויות
+if (typeof API_BASE_URL === 'undefined') {
+    console.error('❌ API_BASE_URL לא מוגדר - ודא שconfig.js נטען ראשון');
+}
+if (typeof API_ENDPOINTS === 'undefined') {
+    console.error('❌ API_ENDPOINTS לא מוגדר - ודא שconfig.js נטען ראשון');
+} else {
+    console.log('🔗 API_BASE_URL:', API_BASE_URL);
+    console.log('🔗 API_ENDPOINTS:', API_ENDPOINTS);
+}
 
 // פונקציה לטעינת נתוני הכתובות מה-Backend API
 async function loadAddressesFromCSV() {
@@ -27,6 +36,12 @@ async function loadAddressesFromCSV() {
         }
         
         const addresses = await response.json();
+        
+        // בדיקה שקיבלנו מערך
+        if (!Array.isArray(addresses)) {
+            throw new Error('Backend לא החזיר מערך כתובות (בדוק את הendpoint)');
+        }
+        
         console.log(`✅ נטענו ${addresses.length} כתובות מה-Backend`);
         console.log("📋 דוגמה לנתונים:", addresses.slice(0, 2));
         
