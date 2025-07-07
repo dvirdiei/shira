@@ -1,6 +1,7 @@
 """
-Backend API - הנוסע המתמיד
+🚀 Backend API - הנוסע המתמיד
 Deployed on Render - supports Supabase only!
+מבנה חדש מאורגן עם שכבות: API, Services, Database, Utils
 """
 import sys
 import os
@@ -18,12 +19,13 @@ logger = logging.getLogger(__name__)
 
 # בדיקה אם Supabase מוגדר
 if os.getenv('SUPABASE_URL') and os.getenv('SUPABASE_SERVICE_KEY'):
-    print("🚀 Starting with Supabase!")
-    from PYTHON.routes_supabase import api
+    logger.info("🚀 Starting with Supabase!")
+    # Import the new organized API
+    from src.api.routes import api
     database_type = 'supabase'
 else:
-    print("❌ Supabase configuration missing!")
-    print("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY")
+    logger.error("❌ Supabase configuration missing!")
+    logger.error("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY")
     sys.exit(1)
 
 # יצירת אפליקציית Flask
@@ -51,6 +53,7 @@ def home():
         'endpoints': [
             '/api/health',
             '/api/addresses',
+            '/api/addresses-array',
             '/api/all-addresses',
             '/api/missing-coordinates',
             '/api/add-address',
@@ -65,9 +68,9 @@ def home():
         'description': f'API Server running with {database_type.upper()} database'
     })
 
-# רישום routes - Supabase בלבד
+# רישום routes - מבנה חדש מאורגן
 app.register_blueprint(api, url_prefix='/api')
-print(f"✅ Supabase API routes registered")
+logger.info("✅ New organized API routes registered")
 
 @app.route('/health')
 def health_check():
@@ -75,13 +78,17 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'database_type': database_type,
-        'message': f'Backend working with {database_type.upper()}'
+        'message': f'Backend working with {database_type.upper()}',
+        'version': '2.0 - Organized Structure'
     })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug = not os.environ.get('RENDER')  # debug רק בפיתוח
-    print(f"🚀 Starting Flask server on port {port}")
-    print(f"📊 Database: {database_type.upper()}")
-    print(f"🌐 Environment: {'Production' if os.getenv('RENDER') else 'Development'}")
+    
+    logger.info(f"🚀 Starting Flask server on port {port}")
+    logger.info(f"📊 Database: {database_type.upper()}")
+    logger.info(f"🌐 Environment: {'Production' if os.getenv('RENDER') else 'Development'}")
+    logger.info(f"🏗️ Architecture: Organized Backend Structure v2.0")
+    
     app.run(host='0.0.0.0', port=port, debug=debug)

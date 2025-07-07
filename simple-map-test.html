@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>בדיקת מפה בסיסית</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; width: 100%; }
+        body { font-family: Arial; direction: rtl; }
+        .status { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>בדיקת מפה - הנוסע המתמיד</h1>
+    <div class="status" id="status">טוען...</div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        function updateStatus(message) {
+            status.innerHTML += '<br>' + message;
+            console.log(message);
+        }
+        
+        updateStatus('✅ HTML נטען');
+        
+        if (typeof L !== 'undefined') {
+            updateStatus('✅ Leaflet נטען');
+            
+            try {
+                // יצירת מפה פשוטה
+                const map = L.map('map').setView([31.7683, 35.2137], 13);
+                updateStatus('✅ מפה נוצרה');
+                
+                // הוספת שכבת מפה
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                updateStatus('✅ שכבת מפה נוספה');
+                
+                // הוספת מארקר
+                L.marker([31.7683, 35.2137])
+                    .addTo(map)
+                    .bindPopup('ירושלים - בדיקת מפה')
+                    .openPopup();
+                updateStatus('✅ מארקר נוסף');
+                
+                updateStatus('🎉 המפה עובדת!');
+                
+            } catch (error) {
+                updateStatus('❌ שגיאה: ' + error.message);
+            }
+        } else {
+            updateStatus('❌ Leaflet לא נטען');
+        }
+    </script>
+</body>
+</html>

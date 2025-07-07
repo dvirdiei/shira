@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הנוסע המתמיד - ירושלים</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        /* דיבגינג CSS */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f0f0f0;
+        }
+        #map { 
+            height: 100vh; 
+            width: 100%; 
+            background-color: #ccc;
+            border: 2px solid red; /* כדי לראות את הגבולות */
+        }
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        /* כפתורי ניהול נוחים לטלפון */
+        .control-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .control-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .control-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn.upload {
+            background: #28a745;
+        }
+        
+        .control-btn.upload:hover {
+            background: #1e7e34;
+        }
+        
+        .control-btn.reset {
+            background: #dc3545;
+        }
+        
+        .control-btn.reset:hover {
+            background: #c82333;
+        }
+        
+        .control-btn.summary {
+            background: #6f42c1;
+        }
+        
+        .control-btn.summary:hover {
+            background: #5a2d91;
+        }
+        
+        /* הסתרת input הקובץ */
+        #fileInput {
+            display: none;
+        }
+        
+        /* התאמה לטלפון */
+        @media (max-width: 768px) {
+            .control-buttons {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .control-btn {
+                flex: 1;
+                min-width: auto;
+                font-size: 14px;
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info" id="debugInfo">
+        🔄 טוען...
+    </div>
+    <div id="map"></div>
+    
+    <!-- כפתורי ניהול -->
+    <div class="control-buttons">
+        <button class="control-btn summary" onclick="showSummary()">📊 סיכום</button>
+        <button class="control-btn upload" onclick="document.getElementById('fileInput').click()">📁 העלאת קובץ</button>
+        <button class="control-btn reset" onclick="resetAllData()">🗑️ איפוס</button>
+    </div>
+    
+    <!-- Input נסתר להעלאת קבצים -->
+    <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(event)">
+    
+    <script>
+        // Debug info element
+        const debugInfo = document.getElementById('debugInfo');
+        function updateDebug(message) {
+            console.log(message);
+            debugInfo.innerHTML += '<br>' + message;
+        }
+        
+        updateDebug('🚀 HTML נטען');
+        updateDebug('📍 איתור map element: ' + (document.getElementById('map') ? 'קיים' : 'לא נמצא'));
+    </script>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        updateDebug('🗺️ Leaflet נטען: ' + (typeof L !== 'undefined' ? 'כן' : 'לא'));
+    </script>
+    
+    <!-- טעינת הקבצים המודולריים בסדר הנכון -->
+    <script src="js/config.js"></script>
+    <script>
+        updateDebug('⚙️ Config נטען, API_BASE_URL: ' + (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'לא מוגדר'));
+        
+        // בדיקה מהירה של חיבור לבאק אנד
+        if (typeof API_BASE_URL !== 'undefined') {
+            fetch(API_BASE_URL + '/api/addresses-array')
+                .then(response => {
+                    updateDebug('🌐 חיבור לבאק אנד: ' + (response.ok ? '✅ עובד' : '❌ שגיאה'));
+                    return response.json();
+                })
+                .then(data => {
+                    updateDebug('📊 כתובות בבאק אנד: ' + (Array.isArray(data) ? data.length : 'לא ידוע'));
+                })
+                .catch(error => {
+                    updateDebug('❌ שגיאת חיבור: ' + error.message);
+                });
+        }
+    </script>
+    
+    <script src="js/services/data-loader.js"></script>
+    <script src="js/components/map-markers.js"></script>  
+    <script src="js/utils/user-actions.js"></script>
+    <script src="js/services/file-upload.js"></script>
+    <script src="js/utils/found.js"></script>
+    <script src="js/script.js"></script>
+    
+    <script>
+        updateDebug('✅ כל הקבצים נטענו');
+        // בדיקה שהמפה אכן נוצרה
+        setTimeout(() => {
+            const mapElement = document.getElementById('map');
+            const hasMapContent = mapElement && mapElement.children.length > 0;
+            updateDebug('🗺️ מפה נוצרה: ' + (hasMapContent ? 'כן' : 'לא'));
+        }, 2000);
+    </script>
+</body>
+</html>

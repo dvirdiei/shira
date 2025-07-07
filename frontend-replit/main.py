@@ -64,9 +64,9 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         parsed_path = urlparse(self.path)
         path = parsed_path.path
         
-        # אם מבקשים נתיב שאינו קובץ, הפנה ל-index.html
+        # אם מבקשים נתיב שאינו קובץ, הפנה ל-index.html בתיקיית src
         if path == '/' or not os.path.exists(path.lstrip('/')):
-            self.path = '/index.html'
+            self.path = '/src/index.html'
         
         return super().do_GET()
     

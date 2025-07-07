@@ -1,38 +1,52 @@
 # 🎨 Frontend - הנוסע המתמיד
-**Frontend ב-Replit עם חיבור ל-Backend ב-Render**
+**Frontend מאורגן עם מבנה תיקיות מסודר**
 
-## 🔧 הגדרה מהירה
+## � הפעלה מהירה
 
-### צעד 1: עדכון Backend URL
-ערוך את `js/config.js` והחלף:
-```javascript
-const RENDER_API_URL = 'https://your-render-app.onrender.com';  // 🔄 עדכן את זה!
-```
+1. **עדכן את כתובת Backend**: ערוך `src/js/config.js`
+2. **פתח**: `src/index.html` בדפדפן או הפעל `main.py`
+3. **זהו!** האתר יעבוד מיד
 
-עם הURL האמיתי של השרת שלך ב-Render.
-
-### צעד 2: בדיקה מקומית
-1. פתח את `index.html` בדפדפן
-2. פתח Developer Tools (F12)
-3. בדוק שאין שגיאות בConsole
-4. ודא שהAPI נטען: "✅ Backend זמין ומוכן!"
-
-### צעד 3: העלאה ל-Replit
-העלה את כל התיקייה frontend-replit ל-Replit
-
-## 📁 מבנה הקבצים
+## 📁 מבנה חדש ומסודר
 ```
 frontend-replit/
-├── index.html          # דף ראשי
-├── style.css           # עיצוב מלא
-└── js/
-    ├── config.js       # הגדרות API ו-Backend
-    ├── data-loader.js  # טעינת נתונים מ-Backend
-    ├── map-markers.js  # מארקרים ומפה
-    ├── user-actions.js # פעולות משתמש
-    ├── found.js        # טעינת מודולים
-    └── script.js       # אתחול מפה
+├── src/                # 🎯 קוד המקור
+│   ├── index.html     # 🏠 דף ראשי
+│   ├── js/            # 📜 JavaScript מאורגן
+│   │   ├── config.js  # ⚙️ הגדרות
+│   │   ├── components/# 🧩 רכיבי UI
+│   │   ├── services/  # 🔧 שירותי API
+│   │   └── utils/     # �️ פונקציות עזר
+│   └── css/           # 🎨 עיצוב
+├── docs/              # 📚 תיעוד
+├── tests/             # 🧪 בדיקות
+└── main.py            # 🖥️ שרת
 ```
+
+## 🔧 הגדרות
+
+### עדכון Backend URL ב-`src/js/config.js`:
+```javascript
+const RENDER_API_URL = 'https://your-backend.onrender.com';  // 🔄 עדכן!
+```
+
+## ✨ יתרונות המבנה החדש
+
+- 🗂️ **ארגון מקצועי** - כל קובץ במקום הנכון
+- 🔧 **תחזוקה קלה** - קוד מודולרי ומפוצל
+- 📚 **תיעוד מרכזי** - כל המידע בתיקיית docs/
+- 🧪 **מוכן לבדיקות** - תיקיית tests/ מוכנה
+- 🎯 **פיתוח נוח** - חלוקה לוגית לקטגוריות
+
+## 📖 תיעוד מפורט
+
+- **`docs/README_DEPLOY.md`** - הוראות הפעלה ופריסה
+- **`docs/FILE_UPLOAD_GUIDE.md`** - מדריך העלאת קבצים
+- **`FRONTEND_ORGANIZATION_SUMMARY.md`** - סיכום הארגון
+
+---
+
+**Frontend מוכן במבנה מסודר! 🎉**
 
 ## 🚀 העלאה ל-Replit
 
