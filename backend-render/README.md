@@ -293,3 +293,28 @@ curl http://localhost:5000/api/all-addresses
 ---
 
 **Backend מוכן לפעולה! העלה ל-Render וקבל URL לFrontend! 🚀**
+
+## 🗺️ שירות הגיאוקודינג החדש
+
+### 📡 תמיכה במספר שירותי גיאוקודינג:
+- **Maps.co API** - שירות ראשי (מומלץ)
+- **Nominatim** - שירות גיבוי חינמי
+
+### 🔧 הגדרות API:
+בקובץ `.env` הוסף:
+```env
+MAPS_CO_API_KEY=your_api_key_here
+```
+
+### 📊 Endpoints חדשים:
+- `GET /geocoding-service-status` - בדיקת סטטוס השירות
+- `POST /test-geocoding-service` - בדיקת השירות עם כתובת מבחן
+- `GET /validate-api-key` - בדיקת תוקף API key
+- `POST /geocode-single` - גיאוקודינג כתובת בודדת
+
+### 🎯 יתרונות:
+- שירות עם גיבוי (Maps.co + Nominatim)
+- rate limiting מחושב
+- לוגים מפורטים
+- אמת על API key
+- בדיקות מערכת

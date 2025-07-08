@@ -9,18 +9,30 @@ const RENDER_API_URL = 'https://shira-bf24.onrender.com';  // 🔄 עדכן את
 const LOCAL_API_URL = 'http://localhost:5000';
 
 // בחירה אוטומטית של ה-API על בסיס המיקום
-// נשנה זאת זמנית להשתמש ב-Render תמיד לבדיקה
-const API_BASE_URL = RENDER_API_URL;  // זמני - השתמש תמיד ב-Render
+// עבור פיתוח מקומי - השתמש ב-localhost
+const isLocalDevelopment = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' || 
+                           window.location.port === '3000';
+
+const API_BASE_URL = isLocalDevelopment ? LOCAL_API_URL : RENDER_API_URL;
 
 console.log('🌐 משתמש ב-API:', API_BASE_URL);
 console.log('🔍 hostname:', window.location.hostname);
 console.log('🔍 port:', window.location.port);
+console.log('🏠 מצב מקומי:', isLocalDevelopment);
 
 // 🔧 הגדרות API
 const API_ENDPOINTS = {
-    // קריאה וניהול כתובות קיימות - תיקון לפורמט הנכון
-    allAddresses: `${API_BASE_URL}/api/addresses-array`,        // 🔧 מחזיר מערך ישירות
-    addresses: `${API_BASE_URL}/api/addresses`,                 // מחזיר אובייקט עם addresses
+    // === מערכת שתי הטבלאות החדשה ===
+    // קריאה וניהול כתובות - פורמט חדש
+    addressesForMap: `${API_BASE_URL}/api/addresses-for-map`,        // 🆕 כל הכתובות למפה (משתי הטבלאות)
+    addressesNeedingManual: `${API_BASE_URL}/api/addresses-needing-manual`, // 🆕 כתובות שצריכות הזנה ידנית
+    addManualCoordinates: `${API_BASE_URL}/api/add-manual-coordinates`,     // 🆕 הוספת קואורדינטות ידניות
+    processNewAddress: `${API_BASE_URL}/api/process-new-address`,           // 🆕 עיבוד כתובת חדשה
+    
+    // endpoints ישנים (תואמות לאחור)
+    allAddresses: `${API_BASE_URL}/api/addresses-array`,            
+    addresses: `${API_BASE_URL}/api/addresses`,                 
     missingCoordinates: `${API_BASE_URL}/api/missing-coordinates`,
     toggleVisited: `${API_BASE_URL}/api/toggle-visited`,
     deleteAddress: `${API_BASE_URL}/api/delete-address`,

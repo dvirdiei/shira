@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
             zoomControl: MAP_CONFIG.zoomControl  // ללא כפתורי zoom
         }).setView(MAP_CONFIG.center, MAP_CONFIG.zoom);
         
+        // שמירת המפה כמשתנה גלובלי לגישה מפונקציות אחרות
+        window.map = map;
+        
         if (typeof updateDebug === 'function') {
             updateDebug("✅ מפה נוצרה בהצלחה!");
         }

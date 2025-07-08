@@ -115,6 +115,18 @@ class RateLimiter:
                 
         except Exception as e:
             logger.error(f"שגיאה בניקוי בקשות ישנות: {e}")
+    
+    def wait_if_needed(self):
+        """המתן אם יש צורך"""
+        try:
+            if not self.can_make_request():
+                wait_time = self.get_wait_time()
+                if wait_time > 0:
+                    logger.info(f"מגביל קצב: ממתין {wait_time:.2f} שניות")
+                    time.sleep(wait_time)
+                    
+        except Exception as e:
+            logger.error(f"שגיאה בהמתנה: {e}")
 
 
 class APIRateLimiter:

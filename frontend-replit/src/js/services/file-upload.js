@@ -13,7 +13,7 @@ setTimeout(() => {
 }, 100);
 
 /**
- * מטפל בהעלאת קובץ TXT
+ * מטפל בהעלאת קובץ TXT עם שירות הגיאוקודינג המתקדם
  */
 async function handleFileUpload(event) {
     const file = event.target.files[0];
@@ -23,164 +23,148 @@ async function handleFileUpload(event) {
         return;
     }
     
-    if (!file.name.toLowerCase().endsWith('.txt')) {
-        alert('יש לבחור קובץ TXT בלבד');
+    if (!file.name.toLowerCase().endsWith('.txt') && !file.name.toLowerCase().endsWith('.csv')) {
+        alert('רק קבצי טקסט (.txt) או CSV (.csv) מותרים');
         return;
     }
+    
+    // הצגת מסך הטעינה
+    showLoadingOverlay();
+    updateLoadingMessage(`מעבד קובץ: ${file.name}`);
     
     try {
         updateDebug('📁 מעלה קובץ: ' + file.name);
         
-        // קריאת תוכן הקובץ
-        const content = await readFileContent(file);
+        // יצירת FormData לשליחת הקובץ
+        const formData = new FormData();
+        formData.append('file', file);
         
-        // פיצול לשורות וניקוי
-        const lines = content.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
+        console.log('📤 שולח קובץ לשרת:', file.name);
         
-        if (lines.length === 0) {
-            alert('הקובץ ריק או לא מכיל כתובות תקינות');
-            return;
-        }
+        // שליחת הקובץ לשרת
+        const response = await fetch(`${API_BASE_URL}/api/upload-addresses-file`, {
+            method: 'POST',
+            body: formData
+        });
         
-        updateDebug(`📋 נמצאו ${lines.length} כתובות בקובץ`);
+        const result = await response.json();
         
-        // הכנת נתונים לשליחה
-        const addresses = lines.map(line => ({ address: line }));
-        
-        // שליחה לשרת
-        const success = await uploadAddressesToServer(addresses);
-        
-        if (success) {
-            alert(`✅ הועלו בהצלחה ${lines.length} כתובות מהקובץ!`);
-            updateDebug('✅ העלאת הקובץ הושלמה בהצלחה');
+        if (result.success) {
+            console.log('✅ הקובץ עובד בהצלחה:', result);
+            updateDebug(`✅ הקובץ עובד: ${result.addresses_count} כתובות`);
             
-            // רענון המפה לטעינת הכתובות החדשות
-            console.log('🔄 מנסה לרענן את המפה...');
-            updateDebug('🔄 מרענן את המפה...');
+            // הצגת תוצאות
+            showUploadSuccess(result);
             
-            // אפשרות 1: רענון מלא של המפה
-            if (typeof initializeAddressMap === 'function' && typeof map !== 'undefined') {
-                try {
-                    console.log('🔁 מרענן את המפה עם כתובות חדשות...');
-                    await initializeAddressMap(map);
-                    console.log('✅ המפה רוענה בהצלחה');
-                    updateDebug('✅ המפה רוענה בהצלחה');
-                } catch (err) {
-                    console.error('❌ שגיאה ברענון המפה:', err);
-                    updateDebug('❌ שגיאה ברענון המפה: ' + err.message);
-                }
-            } 
-            // אפשרות 2: טעינת כתובות מחדש
-            else if (typeof loadAddressesFromCSV === 'function') {
-                try {
-                    console.log('🔁 טוען כתובות מחדש...');
-                    const newAddresses = await loadAddressesFromCSV();
-                    console.log('✅ כתובות נטענו מחדש:', newAddresses.length);
-                    updateDebug(`✅ נטענו ${newAddresses.length} כתובות מהשרת`);
-                } catch (err) {
-                    console.error('❌ שגיאה בטעינת כתובות:', err);
-                    updateDebug('❌ שגיאה בטעינת כתובות: ' + err.message);
-                }
-            } 
-            // אפשרות 3: רענון הדף
-            else {
-                console.warn('⚠️ לא נמצאה פונקציה לרענון המפה - מרענן את הדף');
-                updateDebug('⚠️ מרענן את הדף לעדכון המפה...');
-                setTimeout(() => {
+            // רענון המפה
+            setTimeout(() => {
+                hideLoadingOverlay();
+                if (typeof initializeAddressMap === 'function' && typeof map !== 'undefined') {
+                    initializeAddressMap(map);
+                } else {
+                    // אם אין מפה, פשוט רענן את הדף
                     location.reload();
-                }, 2000);
-            }
+                }
+            }, 2000);
+            
         } else {
-            alert('❌ שגיאה בהעלאת הכתובות לשרת');
-            updateDebug('❌ העלאת הקובץ נכשלה');
+            console.error('❌ שגיאה בעיבוד הקובץ:', result.error);
+            updateDebug(`❌ שגיאה: ${result.error}`);
+            showUploadError(result.error);
         }
-
         
     } catch (error) {
-        console.error('שגיאה בהעלאת הקובץ:', error);
-        alert('❌ שגיאה בעיבוד הקובץ: ' + error.message);
-        updateDebug('❌ שגיאה: ' + error.message);
+        console.error('❌ שגיאה בשליחת הקובץ:', error);
+        updateDebug(`❌ שגיאה בשליחה: ${error.message}`);
+        showUploadError('שגיאה בשליחת הקובץ: ' + error.message);
     }
     
-    // איפוס ה-input
+    // איפוס שדה העלאת הקובץ
     event.target.value = '';
 }
 
 /**
- * קורא את תוכן קובץ טקסט
+ * הצגת מסך הטעינה
  */
-function readFileContent(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            resolve(e.target.result);
-        };
-        
-        reader.onerror = function() {
-            reject(new Error('שגיאה בקריאת הקובץ'));
-        };
-        
-        reader.readAsText(file, 'utf-8');
-    });
+function showLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    const status = document.getElementById('uploadStatus');
+    
+    if (overlay) {
+        overlay.style.display = 'flex';
+    }
+    if (status) {
+        status.style.display = 'none';
+        status.className = 'upload-status';
+    }
 }
 
 /**
- * שולח כתובות לשרת בבת אחת
+ * הסתרת מסך הטעינה
  */
-async function uploadAddressesToServer(addresses) {
-    try {
-        updateDebug('🌐 שולח כתובות לשרת...');
-        
-        // בדיקה שAPI_ENDPOINTS מוגדר
-        if (typeof API_ENDPOINTS === 'undefined' || !API_ENDPOINTS.batchGeocode) {
-            throw new Error('API_ENDPOINTS לא מוגדר - ודא שconfig.js נטען ראשון');
-        }
-        
-        console.log('📡 שולח בקשה ל:', API_ENDPOINTS.batchGeocode);
-        console.log('📋 נתונים לשליחה:', { addresses: addresses });
-        
-        const response = await fetch(API_ENDPOINTS.batchGeocode, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ addresses: addresses })
-        });
-        
-        console.log('📬 סטטוס תגובה:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ שגיאת שרת מפורטת:', errorText);
-            throw new Error(`שגיאת שרת: ${response.status} - ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        
-        console.log('📋 תגובה מהשרת:', result); // לוג לדיבוג
-        
-        if (result.success) {
-            // בדיקה אם יש summary
-            if (result.summary) {
-                updateDebug(`✅ הועלו בהצלחה: נמצאו ${result.summary.found || 0}, לא נמצאו ${result.summary.not_found || 0}`);
-            } else {
-                updateDebug(`✅ הועלו בהצלחה: ${result.message || 'פעולה הושלמה'}`);
-            }
-            return true;
-        } else {
-            updateDebug('❌ שגיאה מהשרת: ' + (result.message || result.error || 'שגיאה לא ידועה'));
-            return false;
-        }
-        
-    } catch (error) {
-        console.error('שגיאה בשליחה לשרת:', error);
-        updateDebug('❌ שגיאת רשת: ' + error.message);
-        return false;
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
     }
+}
+
+/**
+ * עדכון הודעת הטעינה
+ */
+function updateLoadingMessage(message) {
+    const messageElement = document.getElementById('loadingMessage');
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+}
+
+/**
+ * הצגת הודעת הצלחה
+ */
+function showUploadSuccess(result) {
+    const status = document.getElementById('uploadStatus');
+    
+    if (!status) return;
+    
+    let message = `✅ הקובץ עובד בהצלחה!\n`;
+    message += `📄 קובץ: ${result.filename}\n`;
+    message += `📊 כתובות שנמצאו: ${result.addresses_count}\n`;
+    
+    if (result.geocoding_result) {
+        message += `✅ הצלחה: ${result.geocoding_result.successful || 0}\n`;
+        message += `💾 נשמרו: ${result.geocoding_result.saved || 0}\n`;
+        
+        if (result.geocoding_result.failed > 0) {
+            message += `❌ כשלון: ${result.geocoding_result.failed}\n`;
+        }
+    }
+    
+    status.className = 'upload-status success';
+    status.style.display = 'block';
+    status.innerHTML = message.replace(/\n/g, '<br>');
+    
+    updateLoadingMessage('הושלם בהצלחה! רענון המפה...');
+}
+
+/**
+ * הצגת הודעת שגיאה
+ */
+function showUploadError(error) {
+    const status = document.getElementById('uploadStatus');
+    
+    if (!status) return;
+    
+    status.className = 'upload-status error';
+    status.style.display = 'block';
+    status.innerHTML = `❌ שגיאה בעיבוד הקובץ:<br>${error}`;
+    
+    updateLoadingMessage('עיבוד נכשל');
+    
+    // הסתרה אוטומטית לאחר 5 שניות
+    setTimeout(() => {
+        hideLoadingOverlay();
+    }, 5000);
 }
 
 /**
@@ -189,11 +173,8 @@ async function uploadAddressesToServer(addresses) {
 function showSummary() {
     updateDebug('📊 פותח דף סיכום');
     
-    // בדיקה אם יש דף סיכום נפרד
-    const summaryPage = 'summary.html';
-    
-    // פתיחה בחלון/טאב חדש
-    window.open(summaryPage, '_blank');
+    // לעתיד - נוכל לפתוח דף סיכום נפרד
+    alert('📊 פונקציית סיכום עדיין לא מוכנה');
 }
 
 /**
@@ -206,27 +187,14 @@ async function resetAllData() {
         return;
     }
     
-    // בקשת אישור נוסף
-    const doubleConfirm = confirm('❗ אישור אחרון!\n\nלמחוק את כל הנתונים?');
-    
-    if (!doubleConfirm) {
-        return;
-    }
-    
     try {
         updateDebug('🗑️ מבצע איפוס נתונים...');
         
-        // בדיקה שAPI_ENDPOINTS מוגדר
-        if (typeof API_ENDPOINTS === 'undefined' || !API_ENDPOINTS.resetData) {
-            throw new Error('API_ENDPOINTS לא מוגדר - ודא שconfig.js נטען ראשון');
-        }
-        
         // שליחה לשרת לאיפוס
-        const response = await fetch(API_ENDPOINTS.resetData, {
+        const response = await fetch(`${API_BASE_URL}/api/reset-all-data`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
             }
         });
         
@@ -239,27 +207,6 @@ async function resetAllData() {
         if (result.success) {
             alert('✅ כל הנתונים נמחקו בהצלחה!');
             updateDebug('✅ איפוס הושלם');
-            
-            // רענון המפה
-            if (typeof initializeAddressMap === 'function' && typeof map !== 'undefined') {
-                try {
-                    console.log('🔁 מרענן את המפה אחרי איפוס...');
-                    await initializeAddressMap(map);
-                    console.log('✅ המפה רוענה בהצלחה');
-                } catch (err) {
-                    console.error('❌ שגיאה ברענון המפה:', err);
-                    updateDebug('❌ שגיאה ברענון המפה: ' + err.message);
-                }
-            } else if (typeof loadAddressesFromCSV === 'function') {
-                try {
-                    console.log('🔁 טוען כתובות מחדש אחרי איפוס...');
-                    await loadAddressesFromCSV();
-                    console.log('✅ כתובות נטענו מחדש');
-                } catch (err) {
-                    console.error('❌ שגיאה בטעינת כתובות:', err);
-                    updateDebug('❌ שגיאה בטעינת כתובות: ' + err.message);
-                }
-            }
             
             // רענון הדף
             setTimeout(() => {

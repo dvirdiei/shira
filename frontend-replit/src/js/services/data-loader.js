@@ -14,19 +14,19 @@ if (typeof API_ENDPOINTS === 'undefined') {
     console.log('🔗 API_ENDPOINTS:', API_ENDPOINTS);
 }
 
-// פונקציה לטעינת נתוני הכתובות מה-Backend API
+// פונקציה לטעינת נתוני הכתובות מה-Backend API - מערכת שתי טבלאות
 async function loadAddressesFromCSV() {
     try {
-        console.log("🚀 טוען נתוני כתובות מה-Backend...");
-        console.log("📡 URL לקריאה:", API_ENDPOINTS.allAddresses);
+        console.log("🚀 טוען נתוני כתובות מה-Backend (מערכת שתי טבלאות)...");
+        console.log("📡 URL לקריאה:", API_ENDPOINTS.addressesForMap);
         
         // וידוא שAPI_ENDPOINTS מוגדר
-        if (typeof API_ENDPOINTS === 'undefined' || !API_ENDPOINTS.allAddresses) {
+        if (typeof API_ENDPOINTS === 'undefined' || !API_ENDPOINTS.addressesForMap) {
             throw new Error('API_ENDPOINTS לא מוגדר - ודא שconfig.js נטען ראשון');
         }
         
-        // קריאה ל-Backend API ב-Render
-        const response = await fetch(API_ENDPOINTS.allAddresses, {
+        // קריאה ל-Backend API ב-Render - endpoint חדש שמחזיר כתובות משתי הטבלאות
+        const response = await fetch(API_ENDPOINTS.addressesForMap, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,16 +40,33 @@ async function loadAddressesFromCSV() {
             throw new Error(`שגיאת Backend: ${response.status} - ${response.statusText}`);
         }
         
-        const addresses = await response.json();
+        const result = await response.json();
+        
+        // בדיקה שקיבלנו תגובה תקינה
+        if (!result.success) {
+            console.error('🔍 תגובה מהBackend:', result);
+            throw new Error(`Backend error: ${result.error || 'Unknown error'}`);
+        }
+        
+        const addresses = result.addresses;
         
         // בדיקה שקיבלנו מערך
         if (!Array.isArray(addresses)) {
-            console.error('🔍 תגובה מהBackend:', addresses);
+            console.error('🔍 תגובה מהBackend:', result);
             throw new Error('Backend לא החזיר מערך כתובות (בדוק את הendpoint)');
         }
         
-        console.log(`✅ נטענו ${addresses.length} כתובות מה-Backend`);
+        console.log(`✅ נטענו ${addresses.length} כתובות מהBackend (משתי הטבלאות)`);
         console.log("📋 דוגמה לנתונים:", addresses.slice(0, 2));
+        
+        // מיון כתובות לפי מקור
+        const geocodedAddresses = addresses.filter(addr => addr.source === 'geocoded');
+        const manualAddresses = addresses.filter(addr => addr.source === 'manual');
+        const correctedAddresses = addresses.filter(addr => addr.source === 'manual_corrected');
+        
+        console.log(`📍 ${geocodedAddresses.length} כתובות מגיאוקודינג`);
+        console.log(`✋ ${manualAddresses.length} כתובות ידניות`);
+        console.log(`🔧 ${correctedAddresses.length} כתובות מתוקנות`);
         
         return addresses;
         
@@ -196,8 +213,131 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500); // המתנה של חצי שנייה לאחר טעינת הדף
 });
 
-// ייצוא הפונקציות
-window.loadAddressesFromCSV = loadAddressesFromCSV;
-window.loadMissingCoordinates = loadMissingCoordinates;
-window.createSummaryInfo = createSummaryInfo;
-window.toggleSummary = toggleSummary;
+// === פונקציות חדשות למערכת שתי הטבלאות ===
+
+// טעינת כתובות שצריכות קואורדינטות ידניות
+async function loadAddressesNeedingManual() {
+    try {
+        console.log("🔍 טוען כתובות שצריכות קואורדינטות ידניות...");
+        
+        const response = await fetch(API_ENDPOINTS.addressesNeedingManual, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`שגיאת Backend: ${response.status} - ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(`Backend error: ${result.error || 'Unknown error'}`);
+        }
+        
+        console.log(`✅ נטענו ${result.addresses.length} כתובות שצריכות קואורדינטות ידניות`);
+        return result.addresses;
+        
+    } catch (error) {
+        console.error("❌ שגיאה בטעינת כתובות שצריכות קואורדינטות ידניות:", error);
+        if (typeof showNotification === 'function') {
+            showNotification(`שגיאה בטעינת כתובות: ${error.message}`, 'error');
+        }
+        return [];
+    }
+}
+
+// עיבוד כתובת חדשה (גיאוקודינג אוטומטי)
+async function processNewAddress(address) {
+    try {
+        console.log("🔄 מעבד כתובת חדשה:", address);
+        
+        const response = await fetch(API_ENDPOINTS.processNewAddress, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ address: address })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`שגיאת Backend: ${response.status} - ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log(`✅ כתובת עובדה בהצלחה: ${result.message}`);
+            if (typeof showNotification === 'function') {
+                showNotification(`כתובת נוספה: ${result.message}`, 'success');
+            }
+        } else {
+            console.error("❌ שגיאה בעיבוד כתובת:", result.error);
+            if (typeof showNotification === 'function') {
+                showNotification(`שגיאה: ${result.error}`, 'error');
+            }
+        }
+        
+        return result;
+        
+    } catch (error) {
+        console.error("❌ שגיאה בעיבוד כתובת חדשה:", error);
+        if (typeof showNotification === 'function') {
+            showNotification(`שגיאה בעיבוד כתובת: ${error.message}`, 'error');
+        }
+        return { success: false, error: error.message };
+    }
+}
+
+// הוספת קואורדינטות ידניות
+async function addManualCoordinates(missingId, lat, lon, neighborhood = null, addedBy = 'user') {
+    try {
+        console.log(`🎯 מוסיף קואורדינטות ידניות לכתובת ID: ${missingId}`);
+        
+        const response = await fetch(API_ENDPOINTS.addManualCoordinates, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                missing_id: missingId,
+                lat: lat,
+                lon: lon,
+                neighborhood: neighborhood,
+                added_by: addedBy
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`שגיאת Backend: ${response.status} - ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log("✅ קואורדינטות ידניות נוספו בהצלחה");
+            if (typeof showNotification === 'function') {
+                showNotification("קואורדינטות ידניות נוספו בהצלחה!", 'success');
+            }
+        } else {
+            console.error("❌ שגיאה בהוספת קואורדינטות ידניות:", result.error);
+            if (typeof showNotification === 'function') {
+                showNotification(`שגיאה: ${result.error}`, 'error');
+            }
+        }
+        
+        return result;
+        
+    } catch (error) {
+        console.error("❌ שגיאה בהוספת קואורדינטות ידניות:", error);
+        if (typeof showNotification === 'function') {
+            showNotification(`שגיאה בהוספת קואורדינטות: ${error.message}`, 'error');
+        }
+        return { success: false, error: error.message };
+    }
+}

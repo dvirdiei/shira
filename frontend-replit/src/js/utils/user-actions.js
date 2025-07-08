@@ -4,11 +4,11 @@
 console.log('👤 Frontend user-actions.js נטען בהצלחה');
 
 // פונקציות עזר לפעולות על הכתובות
-async function toggleVisitStatus(address, currentStatus) {
+async function toggleVisitStatus(addressId, currentStatus) {
     try {
         const action = currentStatus ? 'unmark' : 'mark';
         const actionText = currentStatus ? 'מבטל ביקור' : 'מסמן כביקור';
-        console.log(`${actionText} עבור ${address} - שולח ל-Backend`);
+        console.log(`${actionText} עבור ID ${addressId} - שולח ל-Backend`);
         
         // וידוא שAPI_ENDPOINTS מוגדר
         if (typeof API_ENDPOINTS === 'undefined') {
@@ -23,8 +23,9 @@ async function toggleVisitStatus(address, currentStatus) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ 
-                address: address,
-                action: action
+                id: addressId,
+                action: action,
+                table_type: 'addresses'  // ברירת מחדל
             })
         });
         
@@ -49,17 +50,16 @@ async function toggleVisitStatus(address, currentStatus) {
 }
 
 // פונקציה ישנה לתאימות לאחור
-async function markAsVisited(address) {
-    return toggleVisitStatus(address, false);
+async function markAsVisited(addressId) {
+    return toggleVisitStatus(addressId, false);
 }
 
 // פונקציה למחיקת כתובת
-async function deleteAddress(address) {
+async function deleteAddress(addressId) {
     // אישור מחיקה עם הודעה ברורה יותר
     const confirmMessage = `⚠️ אזהרה: פעולת מחיקה
     
-האם אתה בטוח שברצונך למחוק את הכתובת:
-"${address}"
+האם אתה בטוח שברצונך למחוק את הכתובת (ID: ${addressId})?
 
 הכתובת תועבר לקובץ המחוקים עם תאריך המחיקה.
 פעולה זו ניתנת לביטול רק באופן ידני.`;
@@ -71,7 +71,7 @@ async function deleteAddress(address) {
     }
     
     try {
-        console.log(`מוחק את ${address} - שולח ל-Backend`);
+        console.log(`מוחק את ID ${addressId} - שולח ל-Backend`);
         
         // וידוא שAPI_ENDPOINTS מוגדר
         if (typeof API_ENDPOINTS === 'undefined') {
@@ -86,7 +86,8 @@ async function deleteAddress(address) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ 
-                address: address
+                id: addressId,
+                table_type: 'addresses'  // ברירת מחדל
             })
         });
         
@@ -97,7 +98,7 @@ async function deleteAddress(address) {
         const result = await response.json();
         
         if (result.success) {
-            showNotification(`הכתובת "${address}" נמחקה בהצלחה 🗑️`, 'success');
+            showNotification(`הכתובת (ID: ${addressId}) נמחקה בהצלחה 🗑️`, 'success');
             // עדכון המפה באופן מיידי
             location.reload(); // רענון הדף להצגת השינויים
         } else {

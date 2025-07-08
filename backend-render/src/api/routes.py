@@ -53,6 +53,27 @@ def get_missing_coordinates():
     """קבלת כתובות בלי קואורדינטות"""
     return AddressHandlers.get_missing_coordinates()
 
+# ===== NEW ROUTES FOR TWO TABLES SYSTEM =====
+@api.route('/addresses-for-map', methods=['GET'])
+def get_addresses_for_map():
+    """קבלת כל הכתובות למפה (משתי הטבלאות)"""
+    return AddressHandlers.get_all_addresses_for_map()
+
+@api.route('/addresses-needing-manual', methods=['GET'])
+def get_addresses_needing_manual():
+    """קבלת כתובות שצריכות קואורדינטות ידניות"""
+    return AddressHandlers.get_addresses_needing_manual()
+
+@api.route('/add-manual-coordinates', methods=['POST'])
+def add_manual_coordinates():
+    """הוספת קואורדינטות ידניות לכתובת"""
+    return AddressHandlers.add_manual_coordinates()
+
+@api.route('/process-new-address', methods=['POST'])
+def process_new_address():
+    """עיבוד כתובת חדשה עם geocoding אוטומטי"""
+    return AddressHandlers.process_new_address()
+
 @api.route('/add-address', methods=['POST'])
 def add_address():
     """הוספת כתובת בודדת"""
@@ -78,6 +99,31 @@ def batch_geocode():
 def retry_geocoding():
     """ניסיון חוזר לגיאוקודינג"""
     return GeocodingHandlers.retry_geocoding()
+
+@api.route('/geocoding-service-status', methods=['GET'])
+def get_geocoding_service_status():
+    """קבלת סטטוס שירות הגיאוקודינג"""
+    return GeocodingHandlers.get_service_status()
+
+@api.route('/test-geocoding-service', methods=['POST'])
+def test_geocoding_service():
+    """בדיקת שירות הגיאוקודינג"""
+    return GeocodingHandlers.test_geocoding_service()
+
+@api.route('/validate-api-key', methods=['GET'])
+def validate_api_key():
+    """בדיקת תוקף API key"""
+    return GeocodingHandlers.validate_api_key()
+
+@api.route('/geocode-single', methods=['POST'])
+def geocode_single_address():
+    """גיאוקודינג כתובת בודדת"""
+    return GeocodingHandlers.geocode_single_address()
+
+@api.route('/upload-addresses-file', methods=['POST'])
+def upload_addresses_file():
+    """העלאת קובץ כתובות לגיאוקודינג"""
+    return SystemHandlers.upload_addresses_file()
 
 # ===== DATA MANAGEMENT ROUTES =====
 @api.route('/reset-data', methods=['POST'])
@@ -146,10 +192,16 @@ def api_info():
             '/api/add-address',
             '/api/toggle-visited',
             '/api/delete-address',
+            '/api/addresses-for-map',
+            '/api/addresses-needing-manual',
             
             # Geocoding
             '/api/batch-geocode',
             '/api/retry-geocoding',
+            '/api/geocoding-service-status',
+            '/api/test-geocoding-service',
+            '/api/validate-api-key',
+            '/api/geocode-single',
             
             # Data Management
             '/api/reset-data',

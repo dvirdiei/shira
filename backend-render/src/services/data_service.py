@@ -124,33 +124,35 @@ class DataService:
             }
     
     def reset_all_data(self) -> Dict:
-        """איפוס כל הנתונים - מחיקה מלאה ואתחול מחדש"""
+        """איפוס כל הנתונים - מחיקה מלאה משתי הטבלאות"""
         try:
+            from ..database.connection import get_database_client
+            supabase = get_database_client()
+            
             # קבל סטטיסטיקות לפני המחיקה
             stats_before = self.get_statistics()
             addresses_before = stats_before.get('data', {}).get('total_addresses', 0)
             
-            # מחק את כל הכתובות
-            success = self.queries.delete_all_addresses()
+            # מחק מטבלת הכתובות הרגילות
+            addresses_response = supabase.table('addresses').delete().neq('id', 0).execute()
+            addresses_deleted = len(addresses_response.data) if addresses_response.data else 0
             
-            if success:
-                # אתחל מחדש את הטבלה עם נתונים בסיסיים
-                self._initialize_basic_data()
-                
-                logger.info(f"אופסו כל הנתונים: {addresses_before} כתובות")
-                return {
-                    'success': True,
-                    'message': f'אופסו כל הנתונים בהצלחה: {addresses_before} כתובות',
-                    'deleted_count': addresses_before,
-                    'reinitialized': True,
-                    'timestamp': datetime.now().isoformat()
-                }
-            else:
-                return {
-                    'success': False,
-                    'error': 'לא ניתן למחוק נתונים',
-                    'deleted_count': 0
-                }
+            # מחק מטבלת הכתובות החסרות
+            missing_response = supabase.table('addresses_missing_coordinates').delete().neq('id', 0).execute()
+            missing_deleted = len(missing_response.data) if missing_response.data else 0
+            
+            total_deleted = addresses_deleted + missing_deleted
+            
+            logger.info(f"אופסו כל הנתונים: {addresses_deleted} כתובות רגילות + {missing_deleted} כתובות חסרות = {total_deleted} סה\"כ")
+            
+            return {
+                'success': True,
+                'message': f'אופסו כל הנתונים בהצלחה: {total_deleted} כתובות (רגילות: {addresses_deleted}, חסרות: {missing_deleted})',
+                'deleted_count': total_deleted,
+                'addresses_deleted': addresses_deleted,
+                'missing_deleted': missing_deleted,
+                'timestamp': datetime.now().isoformat()
+            }
                 
         except Exception as e:
             logger.error(f"שגיאה באיפוס כל הנתונים: {e}")

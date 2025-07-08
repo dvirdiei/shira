@@ -10,6 +10,7 @@ from datetime import datetime
 
 from ..database.queries import AddressQueries
 from ..database.models import Address, AddressValidator, AddressFormatter
+from ..database.connection import get_database_client
 from ..utils.validators import DataValidator
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class AddressService:
         self.queries = AddressQueries()
         self.validator = AddressValidator()
         self.formatter = AddressFormatter()
+        self.supabase = get_database_client()
     
     def get_all_addresses(self) -> List[Dict]:
         """קבלת כל הכתובות"""
@@ -115,28 +117,38 @@ class AddressService:
                 'error': str(e)
             }
     
-    def toggle_visited(self, address_id: int) -> Dict:
-        """החלפת סטטוס ביקור"""
+    def toggle_visited(self, address_id: int, table_type: str = 'addresses') -> Dict:
+        """החלפת סטטוס ביקור בשתי הטבלאות"""
         try:
-            # קבלת הכתובת הנוכחית
-            current_address = self.queries.get_address_by_id(address_id)
+            from ..database.connection import get_database_client
+            supabase = get_database_client()
             
-            if not current_address:
+            # קביעת הטבלה
+            table_name = 'addresses' if table_type == 'addresses' else 'addresses_missing_coordinates'
+            
+            # קבלת הכתובת הנוכחית
+            response = supabase.table(table_name).select('*').eq('id', address_id).execute()
+            
+            if not response.data:
                 return {
                     'success': False,
                     'error': 'כתובת לא נמצאה'
                 }
             
+            current_address = response.data[0]
+            
             # החלפת הסטטוס
             new_visited = not current_address.get('visited', False)
             
             # עדכון בבסיס הנתונים
-            success = self.queries.update_visited_status(address_id, new_visited)
+            update_response = supabase.table(table_name).update({
+                'visited': new_visited
+            }).eq('id', address_id).execute()
             
-            if success:
+            if update_response.data:
                 return {
                     'success': True,
-                    'message': f'סטטוס ביקור עודכן ל-{new_visited}',
+                    'message': f'סטטוס ביקור עודכן ל-{"ביקר" if new_visited else "לא ביקר"}',
                     'visited': new_visited
                 }
             else:
@@ -152,22 +164,28 @@ class AddressService:
                 'error': str(e)
             }
     
-    def delete_address(self, address_id: int) -> Dict:
-        """מחיקת כתובת"""
+    def delete_address(self, address_id: int, table_type: str = 'addresses') -> Dict:
+        """מחיקת כתובת משתי הטבלאות"""
         try:
-            # בדיקה שהכתובת קיימת
-            current_address = self.queries.get_address_by_id(address_id)
+            from ..database.connection import get_database_client
+            supabase = get_database_client()
             
-            if not current_address:
+            # קביעת הטבלה
+            table_name = 'addresses' if table_type == 'addresses' else 'addresses_missing_coordinates'
+            
+            # בדיקה שהכתובת קיימת
+            response = supabase.table(table_name).select('*').eq('id', address_id).execute()
+            
+            if not response.data:
                 return {
                     'success': False,
                     'error': 'כתובת לא נמצאה'
                 }
             
             # מחיקה מבסיס הנתונים
-            success = self.queries.delete_address(address_id)
+            delete_response = supabase.table(table_name).delete().eq('id', address_id).execute()
             
-            if success:
+            if delete_response.data:
                 return {
                     'success': True,
                     'message': 'כתובת נמחקה בהצלחה'
@@ -392,35 +410,6 @@ class AddressService:
                 'message': f'שגיאה בעדכון סטטוס: {str(e)}'
             }
     
-    def delete_address(self, address_text: str) -> Dict:
-        """מחיקת כתובת"""
-        try:
-            if not address_text or not address_text.strip():
-                return {
-                    'success': False,
-                    'message': 'כתובת חסרה'
-                }
-            
-            success = self.queries.delete_address_by_text(address_text)
-            
-            if success:
-                return {
-                    'success': True,
-                    'message': f'כתובת "{address_text}" נמחקה בהצלחה'
-                }
-            else:
-                return {
-                    'success': False,
-                    'message': 'לא ניתן למחוק את הכתובת'
-                }
-                
-        except Exception as e:
-            logger.error(f"❌ שגיאה במחיקת כתובת: {e}")
-            return {
-                'success': False,
-                'message': f'שגיאה במחיקת כתובת: {str(e)}'
-            }
-    
     def reset_all_data(self) -> Dict:
         """איפוס כל הנתונים"""
         try:
@@ -459,3 +448,23 @@ class AddressService:
                 'success': False,
                 'error': str(e)
             }
+    
+    def find_address_by_name(self, address_name: str, table_type: str = 'addresses') -> Optional[Dict]:
+        """חיפוש כתובת לפי שם"""
+        try:
+            from ..database.connection import get_database_client
+            supabase = get_database_client()
+            
+            table_name = 'addresses' if table_type == 'addresses' else 'addresses_missing_coordinates'
+            
+            # חיפוש בטבלה הרלוונטית
+            response = supabase.table(table_name).select('*').eq('address', address_name).execute()
+            
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+            else:
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ שגיאה בחיפוש כתובת {address_name}: {e}")
+            return None

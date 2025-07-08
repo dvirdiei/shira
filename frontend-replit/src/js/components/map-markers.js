@@ -58,31 +58,11 @@ function createCustomIcons() {
     };
 }
 
-// פונקציה ליצירת תוכן פופאפ
+// פונקציה ליצירת תוכן פופאפ (פשוט ומדויק)
 function createPopupContent(address) {
     const statusText = address.visited ? "ביקרנו" : "לא ביקרנו";
     const statusIcon = address.visited ? "✅" : "❌";
     const statusClass = address.visited ? "status-visited" : "status-not-visited";
-    
-    let sourceText, sourceIcon;
-    switch(address.source) {
-        case 'manual':
-            sourceText = "הוספה ידנית";
-            sourceIcon = "✋";
-            break;
-        case 'manual_corrected':
-            sourceText = "תיקון ידני";
-            sourceIcon = "🔧";
-            break;
-        case 'demo':
-            sourceText = "נתוני דמו";
-            sourceIcon = "🧪";
-            break;
-        default:
-            sourceText = "גיאוקודינג אוטומטי";
-            sourceIcon = "🤖";
-            break;
-    }
     
     return `
         <div class="popup-content" dir="rtl">
@@ -94,22 +74,14 @@ function createPopupContent(address) {
                         ${statusIcon} ${statusText}
                     </span>
                 </p>
-                <p><strong>🔍 מקור:</strong> 
-                    <span class="source-${address.source}">
-                        ${sourceIcon} ${sourceText}
-                    </span>
-                </p>
-                <div class="coordinates">
-                    <small>🌍 קואורדינטות: ${address.lat.toFixed(6)}, ${address.lon.toFixed(6)}</small>
-                </div>
             </div>
             <div class="popup-actions">
                 ${address.source !== 'demo' ? `
-                    <button onclick="toggleVisitStatus('${address.address}', ${address.visited})" 
+                    <button onclick="toggleVisitStatus(${address.id}, ${address.visited})" 
                             class="btn-visit ${address.visited ? 'cancel' : ''}">
                         ${address.visited ? 'בטל ביקור' : 'סמן כביקור'}
                     </button>
-                    <button onclick="deleteAddress('${address.address}')" 
+                    <button onclick="deleteAddress(${address.id})" 
                             class="btn-delete">
                         🗑️ מחק נקודה
                     </button>
